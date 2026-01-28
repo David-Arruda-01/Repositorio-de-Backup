@@ -1,8 +1,8 @@
-Projeto de construção de um app de gestão de um Restaurante.
+## Projeto de construção de um app de gestão de um Restaurante.
 
 Foi solicitado a construção de um MER - modelo de entidade relacionamento para construção das tabelas do banoco de dados
 
-CONFIGURAÇÃO INICIAIS:
+### CONFIGURAÇÃO INICIAIS:
 
 Após as intalações dos ide (VS-Code), foi solicitada a instalação do Laragon - para inicialização de um cliente/servidor e o composer para gerenciamento das dependencias do php no projeto de forma mais automatica. https://laragon.org/download/ https://code.visualstudio.com/download https://getcomposer.org instale tambem o Git para poder gerenciar as alterações em seu projeto. https://git-scm.com/downloads
 
@@ -14,7 +14,7 @@ Crie a pasta: *app/ - Seu código versionado no seu git. *framework/ - aqui ser�
 
 No terminal do VsCode use o comando 'git init' para iniciar o monitoramento de seu arquivos. Ao ativar, será criado um pasta git dentro da pasta rais do seu app. nesta pasta crie o arquivo ".gitignore" e adicione as pasta que o git deverá iginorar quando vc for subir ela para o seu repositorio na web.
 
-framework/ vendor/
+## framework/ vendor/
 
 Crie um arquivo chamado composer.json na raiz da sua aplicação. { "autoload": { "psr-4": { "App\":"app/", "Fmk\":"framework/" } }
 } Digite o comando para gerar os autoloads da aplicação: "composer dump-autoload" com isso o composer controi a pasta vendor/ na sua aplicação.
@@ -33,7 +33,7 @@ Na pasta public crie um arquivo “index.php”; Dentro desse arquivo requeira o
 
 Reinicie seu Laragon. Em um navegador digite o nome do diretório do seu projeto seguido de .test EX: restaurante.test e se a página aparecer em branco o autoload está funcionando.
 
-CRIAÇÃO DE VIEWS E ROTAS:
+## CRIAÇÃO DE VIEWS E ROTAS:
 
 Baixe um template de dastbord. Sugestão Usada: https://www.creative-tim.com/product/argon-dashboard-bs4
 
@@ -61,7 +61,7 @@ apos criar não esquecer de criar uma função "loadHelpers" apra inicializar no
 
 agora vc pode criar dentor do "Helpers/view.php" uma função que irar criar a sua view, onde ela irar criar e acionar o render apenas indicando o nome da view.
 
-*separação da view e do template.
+**separação da view e do template.**
 
 criar pasta "template" na pasta "app".
 
