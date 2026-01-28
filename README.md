@@ -1,4 +1,4 @@
-#Projeto de construção de um app de gestão de um Restaurante.
+Projeto de construção de um app de gestão de um Restaurante.
 
 Foi solicitado a construção de um MER - modelo de entidade relacionamento para construção das tabelas do banoco de dados
 
