@@ -38,7 +38,7 @@ class AtendimentosController extends Controller
         }
     }
 
-    public function adicionarProduto(Request $request, $atendimento_id)
+    public function adicionarProduto(Request $request, $id)
     {
         $request->validate([
             'produto_id' => 'required|exists:produtos,id',
@@ -48,7 +48,7 @@ class AtendimentosController extends Controller
         $produto = Produto::find($request->produto_id);
 
         Pedido::create([
-            'atendimento_id' => $atendimento_id,
+            'atendimento_id' => $id,
             'produto_id'    => $request->produto_id,
             'quantidade'    => $request->quantidade,
             'valor_un'      => $produto->preco,
@@ -56,10 +56,10 @@ class AtendimentosController extends Controller
 
         NotifyComponent::success('Produto adicionado com sucesso!');
 
-        return (route('mesa.atendimento', ['id' => $atendimento_id]))->redirect();
+        return (route('atendimentos', ['id' => $id]))->redirect();
     }
 
-    public function update($atendimento_id)
+    public function update($id)
     {
         $request = Request::getInstance();
         $atendimento_id = $request->validate('atendimento_id')->required()->isInt()->dbExists(Atendimento::class);
@@ -74,7 +74,7 @@ class AtendimentosController extends Controller
         $quantidade = $request->validate(name: 'quantidade', label: 'Quantidade')->required();
         
         $data    = compact('atendimento_id', 'produto_id', 'valor_un', 'quantidade');
-        $produto = Pedido::find($atendimento_id);
+        $produto = Pedido::find($id);
         
         if (!$produto) {
             NotifyComponent::error("Pedido não encontrado.");
@@ -84,7 +84,7 @@ class AtendimentosController extends Controller
         $produto->update($data);
         NotifyComponent::success("Pedido atualizado com sucesso!");
 
-        return (route('mesa.atendimento', ['id' => $atendimento_id]))->redirect();
+        return (route('atendimentos', ['id' => $id]))->redirect();
     }
 
     public function storage()
@@ -105,25 +105,25 @@ class AtendimentosController extends Controller
 
         NotifyComponent::success("Pedido cadastrado com sucesso!");
 
-        return (route('mesa.atendimento', ['id' => $atendimento_id]))->redirect();
+        return (route('atendimentos', ['id' => $atendimento_id]))->redirect();
     }
 
-    public function atendimentoId($mesa_id)
+    public function atendimentoId($id)
     {
         $nMesas = $_SESSION['N_MESAS'] ?? constant('N_MESAS');
 
-        if ($mesa_id < 1 || $mesa_id > $nMesas) {
+        if ($id < 1 || $id > $nMesas) {
             NotifyComponent::error("Número de mesa inválido.");
             return Router::getRouteByName('home')->redirect();
         }
 
-        $atendimento = Atendimento::where('mesa', $mesa_id)
+        $atendimento = Atendimento::where('mesa', $id)
             ->where('pagamento_data', 'is', null)
             ->first();
 
         if (!$atendimento) {
             $atendimento = Atendimento::create([
-                'mesa' => $mesa_id
+                'mesa' => $id
             ]);
         }
 
@@ -146,5 +146,98 @@ class AtendimentosController extends Controller
 
         NotifyComponent::success("Atendimento da mesa {$atendimento->mesa} finalizado com sucesso!");
         return Router::getRouteByName('home')->redirect();
+    }
+
+    public function excluirPedido($id)
+    {
+        $pedido = Pedido::find($id);
+        
+        if (!$pedido) {
+            NotifyComponent::error("Pedido não encontrado.");
+            return Router::getRouteByName('home')->redirect();
+        }
+
+        $atendimento_id = $pedido->atendimento_id;
+        $pedido->delete();
+
+        NotifyComponent::success("Pedido excluído com sucesso!");
+        return (route('atendimentos', ['id' => $atendimento_id]))->redirect();
+    }
+
+    public function registrarPagamento($id)
+    {
+        $request = Request::getInstance();
+        $atendimento = Atendimento::find($id);
+
+        if (!$atendimento) {
+            NotifyComponent::error("Atendimento não encontrado.");
+            return Router::getRouteByName('home')->redirect();
+        }
+
+        $valor = $request->validate(name: 'valor', label: 'Valor')->required()->isFloat();
+        $metodo = $request->validate(name: 'metodo_pagamento', label: 'Método de Pagamento')->required();
+
+        if (!$request->validation()) {
+            NotifyComponent::error("Existem erros no formulário.");
+            return $request->old()->redirect();
+        }
+
+        Pagamento::create([
+            'atendimento_id' => $id,
+            'valor' => $valor,
+            'metodo_pagamento' => $metodo,
+            'data_pagamento' => date('Y-m-d H:i:s')
+        ]);
+
+        NotifyComponent::success("Pagamento registrado com sucesso!");
+        return (route('atendimentos', ['id' => $id]))->redirect();
+    }
+
+    public function calcularTotalAtendimento($id)
+    {
+        $atendimento = Atendimento::find($id);
+
+        if (!$atendimento) {
+            return json_encode(['erro' => 'Atendimento não encontrado']);
+        }
+
+        $total = $atendimento->getTotal();
+        return json_encode(['total' => $total]);
+    }
+
+    public function edit($id)
+    {
+        $pedido = Pedido::find($id);
+
+        if (!$pedido) {
+            NotifyComponent::error("Pedido não encontrado.");
+            return Router::getRouteByName('home')->redirect();
+        }
+
+        return view('atendimentos.edit', ['pedido' => $pedido], 'main');
+    }
+
+    public function delete()
+    {
+        $request = Request::getInstance();
+        $id = $request->validate(name: 'id', label: 'ID do Pedido')->required();
+
+        if (!$request->validation()) {
+            NotifyComponent::error("ID inválido.");
+            return $request->old()->redirect();
+        }
+
+        $pedido = Pedido::find($id);
+
+        if (!$pedido) {
+            NotifyComponent::error("Pedido não encontrado.");
+            return Router::getRouteByName('home')->redirect();
+        }
+
+        $atendimento_id = $pedido->atendimento_id;
+        $pedido->delete();
+
+        NotifyComponent::success("Pedido deletado com sucesso!");
+        return (route('atendimentos', ['id' => $atendimento_id]))->redirect();
     }
 }
