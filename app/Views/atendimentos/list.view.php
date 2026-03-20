@@ -1,6 +1,6 @@
 <div class="card card-user">
     <?php if (isset($atendimento) && $atendimento): ?>
-    <form action="/atendimento/ : $atendimento->id ?>" method="POST">
+    <form action="<?= route('atendimento.finalizar', ['id' => $atendimento->id]) ?>" method="POST">
         <div class="card-header">
             <h5 class="card-title">Iniciar atendimento</h5>
         </div>

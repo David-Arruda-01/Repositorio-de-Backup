@@ -56,8 +56,7 @@ class AtendimentosController extends Controller
 
         NotifyComponent::success('Produto adicionado com sucesso!');
 
-        // ✅ Corrigido: gera a URL primeiro, depois redireciona
-        return (route('mesa.pedidos', ['id' => $atendimento_id]))->redirect();
+        return (route('mesa.atendimento', ['id' => $atendimento_id]))->redirect();
     }
 
     public function update($atendimento_id)
@@ -85,8 +84,7 @@ class AtendimentosController extends Controller
         $produto->update($data);
         NotifyComponent::success("Pedido atualizado com sucesso!");
 
-        // ✅ Corrigido
-        return (route('atendimento.update', ['atendimento_id' => $atendimento_id]))->redirect();
+        return (route('mesa.atendimento', ['id' => $atendimento_id]))->redirect();
     }
 
     public function storage()
@@ -105,34 +103,48 @@ class AtendimentosController extends Controller
         $data = compact('atendimento_id','valor_un','produto_id','quantidade');
         Pedido::create($data);
 
-        NotifyComponent::success("Pedido $atendimento_id cadastrado com sucesso!");
+        NotifyComponent::success("Pedido cadastrado com sucesso!");
 
-        // ✅ Corrigido
-        return (route('atendimento.update', ['atendimento_id' => $atendimento_id]))->redirect();
+        return (route('mesa.atendimento', ['id' => $atendimento_id]))->redirect();
     }
 
     public function atendimentoId($mesa_id)
     {
-        $config = include config('Configs/app.php');
-        $TotalMesasDisponiveis = $config['N_MESAS'] ?? 0;
+        $nMesas = $_SESSION['N_MESAS'] ?? constant('N_MESAS');
 
-        if ($mesa_id < 1 || $mesa_id > $TotalMesasDisponiveis) {
+        if ($mesa_id < 1 || $mesa_id > $nMesas) {
             NotifyComponent::error("Número de mesa inválido.");
             return Router::getRouteByName('home')->redirect();
         }
 
-        $atendimento = Atendimento::where('N_MESAS', $mesa_id)
-            ->where('status', 'aberto')
+        $atendimento = Atendimento::where('mesa', $mesa_id)
+            ->where('pagamento_data', 'is', null)
             ->first();
 
         if (!$atendimento) {
             $atendimento = Atendimento::create([
-                'N_MESAS' => $mesa_id,
-                'status'  => 'aberto'
+                'mesa' => $mesa_id
             ]);
         }
 
-        // ✅ Corrigido
-        return (route('atendimentos', ['id' => $atendimento->id]))->redirect();
+        // Busca a view correta para exibir o atendimento
+        return view('atendimentos.list', ['atendimento' => $atendimento], 'main');
+    }
+
+    public function finalizarAtendimento($id)
+    {
+        $atendimento = Atendimento::find($id);
+        
+        if (!$atendimento) {
+            NotifyComponent::error("Atendimento não encontrado.");
+            return Router::getRouteByName('home')->redirect();
+        }
+
+        $atendimento->update([
+            'pagamento_data' => date('Y-m-d H:i:s')
+        ]);
+
+        NotifyComponent::success("Atendimento da mesa {$atendimento->mesa} finalizado com sucesso!");
+        return Router::getRouteByName('home')->redirect();
     }
 }

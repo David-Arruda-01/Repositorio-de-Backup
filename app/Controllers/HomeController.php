@@ -79,44 +79,20 @@ class HomeController extends Controller {
     }
 
     public function index() {
-    // cria o array de mesas [1 => null, 2 => null, ..., N_MESAS => null]
-    $mesas = array_fill(1, constant('N_MESAS'), null);
+        $nMesas = $_SESSION['N_MESAS'] ?? constant('N_MESAS');
+        $mesas = array_fill(1, $nMesas, null);
 
-    // pega todos os atendimentos da tabela (não só os abertos)
-    $atendimentos = Atendimento::all();
+        // Busca apenas atendimentos abertos (sem data de pagamento)
+        $atendimentos = Atendimento::where('pagamento_data', 'is', null)->get();
 
-    foreach ($atendimentos as $atendimento) {
-        $status = 'livre';
-
-        if (is_null($atendimento->pagamento_data)) {
-            $status = 'ativo'; // em andamento
-        } else {
-            $status = 'finalizado'; // já pago/finalizado
+        foreach ($atendimentos as $atendimento) {
+            if (isset($mesas[$atendimento->mesa])) {
+                $mesas[$atendimento->mesa] = $atendimento;
+            }
         }
 
-        // adiciona no array a mesa com os dados e o status
-        $mesas[$atendimento->mesa] = [
-            'id'     => $atendimento->id,
-            'mesa'   => $atendimento->mesa,
-            'status' => $status,
-            'dados'  => $atendimento
-        ];
+        return view('mesas', ['mesas' => $mesas], 'main');
     }
-
-    // se a mesa não tiver atendimento, mantém "livre"
-    foreach ($mesas as $num => $valor) {
-        if ($valor === null) {
-            $mesas[$num] = [
-                'id'     => null,
-                'mesa'   => $num,
-                'status' => 'livre',
-                'dados'  => null
-            ];
-        }
-    }
-
-    return view('mesas', ['mesas' => $mesas], 'main');
-}
         //print_r($mesas);
 
         // var_dump($mesas);
