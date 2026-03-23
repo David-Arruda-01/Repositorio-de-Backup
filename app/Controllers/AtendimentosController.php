@@ -118,8 +118,8 @@ class AtendimentosController extends Controller
             return Router::getRouteByName('home')->redirect();
         }
 
-        $atendimento = Atendimento::where('mesa', $id)
-            ->where('pagamento_data', 'is', null)
+        $atendimento = Atendimento::where('mesa', '=', $id)
+            ->where('pagamento_data', 'IS', null)
             ->first();
 
         if (!$atendimento) {

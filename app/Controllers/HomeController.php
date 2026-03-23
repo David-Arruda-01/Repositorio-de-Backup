@@ -16,7 +16,7 @@ class HomeController extends Controller {
         $mesas = array_fill(1, $nMesas, null);
 
         // Busca apenas atendimentos abertos (sem data de pagamento)
-        $atendimentos = Atendimento::where('pagamento_data', 'is', null)->get();
+        $atendimentos = Atendimento::where('pagamento_data', 'IS', null)->get();
 
         foreach ($atendimentos as $atendimento) {
             if (isset($mesas[$atendimento->mesa])) {
@@ -45,8 +45,8 @@ class HomeController extends Controller {
 
     public function atendimento($id) {
         // Verifica se já existe um atendimento ativo para a mesa
-        $atendimento = Atendimento::where('mesa', $id)
-            ->where('pagamento_data', 'is', null)
+        $atendimento = Atendimento::where('mesa', '=', $id)
+            ->where('pagamento_data', 'IS', null)
             ->first();
 
         if (!$atendimento) {
