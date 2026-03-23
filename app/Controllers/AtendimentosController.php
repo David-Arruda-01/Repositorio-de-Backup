@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Components\NotifyComponent;
@@ -73,10 +74,10 @@ class AtendimentosController extends Controller
         $produto_id = $request->validate(name: 'produto_id', label: 'Produto')->required();
         $valor_un   = $request->validate(name: 'valor_un', label: 'Valor Unitário')->isFloat()->required();
         $quantidade = $request->validate(name: 'quantidade', label: 'Quantidade')->required();
-        
+
         $data    = compact('atendimento_id', 'produto_id', 'valor_un', 'quantidade');
         $produto = Pedido::find($id);
-        
+
         if (!$produto) {
             NotifyComponent::error("Pedido não encontrado.");
             return $request->old()->redirect();
@@ -100,8 +101,8 @@ class AtendimentosController extends Controller
             NotifyComponent::error(msg: "Existem erros de preenchimento no formulário.");
             return $request->old()->redirect();
         }
-       
-        $data = compact('atendimento_id','valor_un','produto_id','quantidade');
+
+        $data = compact('atendimento_id', 'valor_un', 'produto_id', 'quantidade');
         Pedido::create($data);
 
         NotifyComponent::success("Pedido cadastrado com sucesso!");
@@ -118,24 +119,33 @@ class AtendimentosController extends Controller
             return Router::getRouteByName('home')->redirect();
         }
 
+        // 🔍 Busca atendimento aberto da mesa
         $atendimento = Atendimento::where('mesa', '=', $id)
             ->where('pagamento_data', 'IS', null)
             ->first();
 
+        // 🆕 Cria se não existir
         if (!$atendimento) {
             $atendimento = Atendimento::create([
                 'mesa' => $id
             ]);
         }
 
-        // Busca a view correta para exibir o atendimento
-        return view('atendimentos.list', ['atendimento' => $atendimento], 'main');
+
+        // 🔥 Aqui está a correção principal
+        $dados = $atendimento->getDadosCompletos();
+        var_dump($atendimento->getDadosCompletos());
+        die;
+        return view('atendimentos.list', [
+            'atendimento' => $dados['atendimento'],
+            'pedidos'     => $dados['pedidos']
+        ], 'main');
     }
 
     public function finalizarAtendimento($id)
     {
         $atendimento = Atendimento::find($id);
-        
+
         if (!$atendimento) {
             NotifyComponent::error("Atendimento não encontrado.");
             return Router::getRouteByName('home')->redirect();
@@ -152,7 +162,7 @@ class AtendimentosController extends Controller
     public function excluirPedido($id)
     {
         $pedido = Pedido::find($id);
-        
+
         if (!$pedido) {
             NotifyComponent::error("Pedido não encontrado.");
             return Router::getRouteByName('home')->redirect();

@@ -5,7 +5,8 @@ namespace Fmk\MVC;
 use Fmk\Database\DB;
 use Fmk\Database\Query;
 
-abstract class Model{
+abstract class Model
+{
     static protected $table;
     static protected $conneciton_name;
 
@@ -20,90 +21,108 @@ abstract class Model{
 
     protected $relationships = [];
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->exists = !empty($this->data);
         $this->old = $this->data;
     }
 
-    public function __set($name, $value){
+    public function __set($name, $value)
+    {
         $this->data[$name] = $value;
     }
 
-    public function __get($name){
+    public function __get($name)
+    {
         return $this->data[$name] ?? $this->checkRelationship($name);
     }
 
-    public function __isset($name){
+    public function __isset($name)
+    {
         return isset($this->data[$name]);
     }
 
-    public function toArray(){
+    public function toArray()
+    {
         return $this->data;
     }
 
-    public static function query(){
+    public static function query()
+    {
         return DB::connection(static::$conneciton_name)->table(static::class);
     }
 
-    public static function getTableName(){
-        if(static::$table){
+    public static function getTableName()
+    {
+        if (static::$table) {
             return static::$table;
         }
-        return strtolower(basename(static::class))."s";
+        return strtolower(basename(static::class)) . "s";
     }
 
-    public static function find($id){
+    public static function find($id)
+    {
         return static::query()->select(static::$columns)
-        ->where(static::$pk,'=',$id)->first();
+            ->where(static::$pk, '=', $id)->first();
     }
-    public static function all(){
+    public static function all()
+    {
         return static::query()->select(static::$columns)->get();
     }
 
-    public static function create(array $data){
+    public static function create(array $data)
+    {
         $id = static::query()->insert($data);
         return static::find($id);
     }
 
 
-    public static function select($columns){
+    public static function select($columns)
+    {
         return static::query()->select((is_array($columns)) ? $columns : func_get_args());
-        
     }
 
-    public static function where($column, $operator = null, $value = null){
-        return static::query()->where($column,$operator,$value);
+    public static function where($column, $operator = null, $value = null)
+    {
+        return static::query()->where($column, $operator, $value);
     }
-    public static function orWhere($column, $operator = null, $value = null){
-        return static::query()->where($column,$operator,$value);
-    }
-
-    public static function limit(int $limit, int $offset = null){
-        return static::query()->limit($limit,$offset);
+    public static function orWhere($column, $operator = null, $value = null)
+    {
+        return static::query()->where($column, $operator, $value);
     }
 
-    public static function orderDesc($column){
-       return static::query()->orderDesc($column);
+    public static function limit(int $limit, ?int $offset = null)
+    {
+        return static::query()->limit($limit, $offset);
     }
-    
-    public static function orderAsc($column){
+
+    public static function orderDesc($column)
+    {
         return static::query()->orderDesc($column);
     }
 
-    
-    public function isStorage(){
+    public static function orderAsc($column)
+    {
+        return static::query()->orderDesc($column);
+    }
+
+
+    public function isStorage()
+    {
         return $this->exists;
     }
-    
-    public function save() {
-        if (isset($this->id) && !empty($this->id)) { 
+
+    public function save()
+    {
+        if (isset($this->id) && !empty($this->id)) {
             return $this->update(); // Se ID existe, faz UPDATE
         } else {
             return $this->insert(); // Senão, faz INSERT
         }
     }
 
-    protected function insert(){
+    protected function insert()
+    {
         $pk = static::$pk;
         $data = $this->data;
         unset($data[$pk]);
@@ -111,17 +130,19 @@ abstract class Model{
         $this->$pk = $id;
         return $this->exists = true;
     }
-    protected function update(){
+    protected function update()
+    {
         $pk = static::$pk;
         $data = $this->data;
         unset($data[$pk]);
-        static::query()->where($pk,'=',$this->$pk)->update($this->data);
+        static::query()->where($pk, '=', $this->$pk)->update($this->data);
         return true;
     }
 
-    public function delete(){
+    public function delete()
+    {
         $pk = static::$pk;
-        static::query()->where($pk,'=',$this->$pk)->delete();
+        static::query()->where($pk, '=', $this->$pk)->delete();
         $this->exists = false;
         return true;
     }
@@ -132,7 +153,8 @@ abstract class Model{
      * @param string $foreign_key
      * @return Query
      */
-    protected function hasOne($related_class, $foreign_key){
+    protected function hasOne($related_class, $foreign_key)
+    {
         return $related_class::query()->where($foreign_key, '=', $this->id)->setCallback('first');
     }
     /**
@@ -141,7 +163,8 @@ abstract class Model{
      * @param string $local_key
      * @return Query
      */
-    protected function belongsTo($related_class, $local_key){
+    protected function belongsTo($related_class, $local_key)
+    {
         return $related_class::query()->where($related_class::$pk, '=', $this->$local_key)->setCallback('first');
     }
     /**
@@ -150,19 +173,40 @@ abstract class Model{
      * @param string $foreign_key
      * @return Query
      */
-    protected function hasMany($related_class,$foreign_key){
+    protected function hasMany($related_class, $foreign_key)
+    {
         return $related_class::query()->where($foreign_key, '=', $this->id)->setCallback('get');
     }
 
-    public function checkRelationship($name){
-       if(isset($this->relationships[$name])){
+    public function checkRelationship($name)
+    {
+        // Se já foi carregado, retorna do cache
+        if (isset($this->relationships[$name])) {
             return $this->relationships[$name];
-       }
-       
-        if(method_exists($this, $name)){
-            $reflaction = new \ReflectionMethod(static::class, $name);
-            if($reflaction->getReturnType()->getName() == Query::class){
-                $this->relationships[$name] = $this->$name()->exec();
+        }
+
+        // Verifica se existe o método (relacionamento)
+        if (method_exists($this, $name)) {
+
+            $reflection = new \ReflectionMethod($this, $name);
+            $returnType = $reflection->getReturnType();
+
+            // 🔒 Proteção contra null e tipos incompatíveis
+            if ($returnType instanceof \ReflectionNamedType) {
+
+                $typeName = $returnType->getName();
+
+                if ($typeName === Query::class) {
+                    $this->relationships[$name] = $this->$name()->exec();
+                    return $this->relationships[$name];
+                }
+            }
+
+            // 🔥 Fallback: tenta executar mesmo sem tipagem
+            $result = $this->$name();
+
+            if ($result instanceof Query) {
+                $this->relationships[$name] = $result->exec();
                 return $this->relationships[$name];
             }
         }
@@ -170,19 +214,21 @@ abstract class Model{
         return null;
     }
 
-    public function reload(){   
+    public function reload()
+    {
         $this->relationships = [];
         $this->old = $this->data;
         $data =  DB::connection(static::$conneciton_name)
             ->table(static::getTableName())
-            ->where(static::$pk,'=',$this->{static::$pk})
+            ->where(static::$pk, '=', $this->{static::$pk})
             ->first();
-        $this->data = ($data === false)?[]:$data;
+        $this->data = ($data === false) ? [] : $data;
         $this->exists = !empty($this->data);
         return true;
     }
 
-    public static function getPk(){
+    public static function getPk()
+    {
         return self::$pk;
     }
 }

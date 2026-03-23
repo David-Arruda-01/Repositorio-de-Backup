@@ -14,18 +14,17 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($atendimento->pedidos as $pedido): ?>
+                <?php foreach ($pedidos ?? [] as $pedido): ?>
+
                     <tr>
-                        <td><?= $pedido->produto->nome ?></td>
-                        <td><?= $pedido->quantidade ?></td>
-                        <td>R$ <?= number_format($pedido->valor_un, 2, ',', '.') ?></td>
-                        <td>R$ <?= number_format($pedido->quantidade * $pedido->valor_un, 2, ',', '.') ?></td>
+                        <td><?= $pedido['produto']['nome_produto'] ?? '' ?></td>
+                        <td><?= $pedido['pedido']['quantidade'] ?? 0 ?></td>
+                        <td><?= $pedido['produto']['valor_unitario'] ?? 0 ?></td>
                         <td>
-                            <button class="btn btn-danger btn-sm" onclick="excluirPedido(<?= $pedido->id ?>)">
-                                <i class="fa fa-trash"></i>
-                            </button>
+                            <?= ($pedido['produto']['valor_unitario'] ?? 0) * ($pedido['pedido']['quantidade'] ?? 0) ?>
                         </td>
                     </tr>
+
                 <?php endforeach; ?>
             </tbody>
         </table>
@@ -36,16 +35,16 @@
     function excluirPedido(pedido_id) {
         if (confirm('Tem certeza que deseja excluir este pedido?')) {
             fetch(`/atendimento/excluir-pedido/${pedido_id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                window.location.reload();
-            });
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.location.reload();
+                });
         }
     }
 </script>
