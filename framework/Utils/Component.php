@@ -10,7 +10,7 @@ class Component extends View{
     protected $posfix = '';
 
     protected $content = [];
-    public function __construct(string $view = null){
+    public function __construct(?string $view = null){
         if(isset($view)){
             parent::__construct($view);
         }
