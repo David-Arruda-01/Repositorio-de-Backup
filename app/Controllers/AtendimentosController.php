@@ -38,8 +38,9 @@ class AtendimentosController extends Controller
         }
     }
 
-    public function adicionarProduto(Request $request, $id)
+    public function adicionarProduto($id)
     {
+        $request = Request::getInstance();
         $request->validate([
             'produto_id' => 'required|exists:produtos,id',
             'quantidade' => 'required|integer|min:1',
