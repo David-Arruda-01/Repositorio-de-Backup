@@ -6,7 +6,7 @@ trait Validate{
 
     protected $validates = [];
 
-    public function validate($name, string $label = null){
+    public function validate($name, ?string $label = null){
         $label = (is_null($label))?$name:$label;
         return $this->validates[$name] = new \Fmk\Utils\Validate($label,$this->$name);
      }
