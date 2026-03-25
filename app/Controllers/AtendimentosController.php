@@ -18,12 +18,21 @@ class AtendimentosController extends Controller
         $this->middlewares('auth');
     }
 
-    public function index()
+    public function index($id)
     {
-        $atendimentos = Atendimento::all();
+        // 🔥 Busca atendimento
+        $atendimento = Atendimento::find($id);
+
+        // if (!$atendimento) {
+        //     return redirect()->back();
+        // }
+
+        // 🔥 Lazy loading (ou eager se tiver)
+        $pedidos = $atendimento->pedidos();
+
         return view('atendimentos.list', [
-            'atendimentos' => $atendimentos,
-            'atendimento'  => $atendimentos
+            'atendimento' => $atendimento,
+            'pedidos' => $pedidos
         ], 'main');
     }
 
@@ -134,8 +143,8 @@ class AtendimentosController extends Controller
 
         // 🔥 Aqui está a correção principal
         $dados = $atendimento->getDadosCompletos();
-        var_dump($atendimento->getDadosCompletos());
-        die;
+        // var_dump($atendimento->getDadosCompletos());
+        // die;
         return view('atendimentos.list', [
             'atendimento' => $dados['atendimento'],
             'pedidos'     => $dados['pedidos']

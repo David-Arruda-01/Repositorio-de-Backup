@@ -1,33 +1,51 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Models\Atendimento;
 use Fmk\MVC\Controller;
 use Fmk\Utils\Router;
 
-class HomeController extends Controller {
+class HomeController extends Controller
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->middlewares('auth');
     }
 
-    public function index() {
+    public function index()
+    {
         $nMesas = $_SESSION['N_MESAS'] ?? constant('N_MESAS');
-        $mesas = array_fill(1, $nMesas, null);
 
-        // Busca apenas atendimentos abertos (sem data de pagamento)
-        $atendimentos = Atendimento::where('pagamento_data', 'IS', null)->get();
+        $mesas = [];
+
+        for ($i = 1; $i <= $nMesas; $i++) {
+            $mesas[$i] = [
+                'ocupada' => false,
+                'atendimento' => null
+            ];
+        }
+
+        // 🔥 usando método da model
+        $atendimentos = Atendimento::getAbertos();
 
         foreach ($atendimentos as $atendimento) {
-            if (isset($mesas[$atendimento->mesa])) {
-                $mesas[$atendimento->mesa] = $atendimento;
+            $mesaId = (int) $atendimento->mesa;
+
+            if (isset($mesas[$mesaId])) {
+                $mesas[$mesaId] = [
+                    'ocupada' => true,
+                    'atendimento' => $atendimento
+                ];
             }
         }
 
         return view('mesas', ['mesas' => $mesas], 'main');
     }
 
-    public function alterarMesas() {
+    public function alterarMesas()
+    {
         session_start();
 
         $acao = $_POST['acao'] ?? null;
@@ -43,7 +61,8 @@ class HomeController extends Controller {
         return Router::getRouteByName('home')->redirect();
     }
 
-    public function atendimento($id) {
+    public function atendimento($id)
+    {
         // Verifica se já existe um atendimento ativo para a mesa
         $atendimento = Atendimento::where('mesa', '=', $id)
             ->where('pagamento_data', 'IS', null)

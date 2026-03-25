@@ -7,6 +7,23 @@ use App\Models\Pedido;
 
 class Atendimento extends Model
 {
+    protected $visible = [
+        'id',
+        'cliente_id',
+        'mesa',
+        'pagamento_data'
+    ];
+    // 🔥 Permite acessar como $atendimento->campo
+    public function __get($key)
+    {
+        return $this->data[$key] ?? null;
+    }
+
+    public function __isset($key)
+    {
+        return isset($this->data[$key]);
+    }
+
     // 🔗 Relacionamento com pedidos
     public function pedidos()
     {
@@ -30,7 +47,7 @@ class Atendimento extends Model
         return $total;
     }
 
-    // 🎯 🔥 NOVO: Retorna pedidos organizados
+    // 🎯 Pedidos detalhados
     public function getPedidosDetalhados(): array
     {
         $resultado = [];
@@ -38,20 +55,17 @@ class Atendimento extends Model
         $pedidos = $this->pedidos ?? [];
 
         foreach ($pedidos as $pedido) {
-
             $resultado[] = [
                 'pedido' => [
                     'id_pedido' => $pedido->id,
                     'status_do_pedido' => $pedido->status_do_pedido ?? null,
                     'quantidade' => $pedido->quantidade ?? null,
                 ],
-
                 'produto' => [
                     'id_produto' => $pedido->produto->id ?? null,
                     'nome_produto' => $pedido->produto->nome ?? null,
                     'valor_unitario' => $pedido->produto->valor_un ?? null,
                 ],
-
                 'funcionario' => [
                     'id_funcionario' => $pedido->funcionario->id ?? null,
                     'nome_funcionario' => $pedido->funcionario->nome ?? null,
@@ -62,7 +76,7 @@ class Atendimento extends Model
         return $resultado;
     }
 
-    // 🎯 🔥 NOVO: Retorna tudo do atendimento + pedidos
+    // 🎯 Dados completos
     public function getDadosCompletos(): array
     {
         return [
@@ -71,7 +85,6 @@ class Atendimento extends Model
                 'valor_total' => $this->getTotal(),
                 'data_criacao' => $this->criacao_data ?? null,
             ],
-
             'pedidos' => $this->getPedidosDetalhados()
         ];
     }
@@ -83,12 +96,24 @@ class Atendimento extends Model
 
         $mesas = array_fill(1, $nMesas, null);
 
-        $atendimentos = self::where('pagamento_data', 'is', null)->get();
+        $atendimentos = self::where('pagamento_data', '=', null)->get();
 
         foreach ($atendimentos as $atendimento) {
-            $mesas[$atendimento->mesa] = $atendimento;
+            $mesaId = (int) $atendimento->mesa;
+
+            if ($mesaId >= 1 && $mesaId <= $nMesas) {
+                $mesas[$mesaId] = $atendimento;
+            }
         }
 
         return $mesas;
+    }
+
+
+    public static function getAbertos()
+    {
+        return self::where('pagamento_data', 'IS', null)
+            ->where('mesa', 'IS NOT', null) // 🔥 FILTRA AQUI TAMBÉM
+            ->get();
     }
 }
