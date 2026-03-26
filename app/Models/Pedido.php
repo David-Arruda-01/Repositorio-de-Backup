@@ -9,7 +9,7 @@ class Pedido extends Model
 {
     public function produtos()
     {
-        return $this->belongsToMany(Produto::class, 'pedido_produto')
+        return $this->belongsToMany(Produto::class, 'pedido')
                     ->withPivot('quantidade', 'valor_unitario');
     }
 }
