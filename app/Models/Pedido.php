@@ -7,10 +7,9 @@ use Fmk\MVC\Model;
 
 class Pedido extends Model
 {
-
-
-    public function produto(): Query
+    public function produtos()
     {
-        return $this->belongsTo(Produto::class, 'produto_id');
+        return $this->belongsToMany(Produto::class, 'pedido_produto')
+                    ->withPivot('quantidade', 'valor_unitario');
     }
 }
