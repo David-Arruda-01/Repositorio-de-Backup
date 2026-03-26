@@ -10,6 +10,6 @@ class Produto extends Model
 
     public function pedidos()
     {
-        return $this->hasMany(Pedido::class, "produto_id");
+        return $this->belongsToMany(Pedido::class, 'pedido_produto');
     }
 }
