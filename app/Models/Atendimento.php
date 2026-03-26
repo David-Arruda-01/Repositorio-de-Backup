@@ -13,90 +13,81 @@ class Atendimento extends Model
         'mesa',
         'pagamento_data'
     ];
-    // 🔥 Permite acessar como $atendimento->campo
-    public function __get($key)
-    {
-        return $this->data[$key] ?? null;
-    }
 
-    public function __isset($key)
-    {
-        return isset($this->data[$key]);
-    }
-
-    // 🔗 Relacionamento com pedidos
+    /**
+     * 🔗 Relacionamento com pedidos
+     */
     public function pedidos()
     {
         return $this->hasMany(Pedido::class, 'atendimento_id');
     }
 
-    // 💰 Total do atendimento
-    public function getTotal()
+    /**
+     * 💰 Total do atendimento (Accessor)
+     */
+    public function getTotalAttribute()
     {
-        $total = 0;
+        // 🔥 Garante que não terá N+1
+        $this->loadMissing('pedidos.produto');
 
-        $pedidos = $this->pedidos ?? [];
-
-        foreach ($pedidos as $pedido) {
-            $valor = $pedido->produto->valor_un ?? 0;
-            $quantidade = $pedido->quantidade ?? 0;
-
-            $total += $valor * $quantidade;
-        }
-
-        return $total;
+        return $this->pedidos->sum(function ($pedido) {
+            return ($pedido->valor_un ?? 0) * ($pedido->quantidade ?? 0);
+        });
     }
 
-    // 🎯 Pedidos detalhados
+    /**
+     * 🎯 Pedidos detalhados
+     */
     public function getPedidosDetalhados(): array
     {
-        $resultado = [];
+        $this->loadMissing('pedidos.produto', 'pedidos.funcionario');
 
-        $pedidos = $this->pedidos ?? [];
-
-        foreach ($pedidos as $pedido) {
-            $resultado[] = [
+        return $this->pedidos->map(function ($pedido) {
+            return [
                 'pedido' => [
                     'id_pedido' => $pedido->id,
                     'status_do_pedido' => $pedido->status_do_pedido ?? null,
-                    'quantidade' => $pedido->quantidade ?? null,
+                    'quantidade' => $pedido->quantidade ?? 0,
                 ],
                 'produto' => [
                     'id_produto' => $pedido->produto->id ?? null,
                     'nome_produto' => $pedido->produto->nome ?? null,
-                    'valor_unitario' => $pedido->produto->valor_un ?? null,
+                    'valor_unitario' => $pedido->valor_un ?? 0,
                 ],
                 'funcionario' => [
                     'id_funcionario' => $pedido->funcionario->id ?? null,
                     'nome_funcionario' => $pedido->funcionario->nome ?? null,
                 ],
             ];
-        }
-
-        return $resultado;
+        })->toArray();
     }
 
-    // 🎯 Dados completos
+    /**
+     * 🎯 Dados completos
+     */
     public function getDadosCompletos(): array
     {
         return [
             'atendimento' => [
                 'id' => $this->id,
-                'valor_total' => $this->getTotal(),
+                'valor_total' => $this->total, // 🔥 usa accessor
                 'data_criacao' => $this->criacao_data ?? null,
+                'mesa' => $this->mesa
             ],
             'pedidos' => $this->getPedidosDetalhados()
         ];
     }
 
-    // 📊 Mesas abertas
+    /**
+     * 📊 Mesas abertas
+     */
     public static function getMesas()
     {
         $nMesas = constant('N_MESAS');
 
         $mesas = array_fill(1, $nMesas, null);
 
-        $atendimentos = self::where('pagamento_data', '=', null)->get();
+        $atendimentos = self::whereNull('pagamento_data')->get();
 
         foreach ($atendimentos as $atendimento) {
             $mesaId = (int) $atendimento->mesa;
@@ -109,11 +100,13 @@ class Atendimento extends Model
         return $mesas;
     }
 
-
+    /**
+     * 📂 Atendimentos abertos
+     */
     public static function getAbertos()
     {
-        return self::where('pagamento_data', 'IS', null)
-            ->where('mesa', 'IS NOT', null) // 🔥 FILTRA AQUI TAMBÉM
+        return self::whereNull('pagamento_data')
+            ->whereNotNull('mesa')
             ->get();
     }
 }
