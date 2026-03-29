@@ -8,7 +8,6 @@ use Fmk\Utils\Router;
 
 class HomeController extends Controller
 {
-
     public function __construct()
     {
         $this->middlewares('auth');
@@ -20,6 +19,7 @@ class HomeController extends Controller
 
         $mesas = [];
 
+        // Inicializa mesas como livres
         for ($i = 1; $i <= $nMesas; $i++) {
             $mesas[$i] = [
                 'ocupada' => false,
@@ -27,17 +27,21 @@ class HomeController extends Controller
             ];
         }
 
-        // 🔥 usando método da model
+        // 🔥 pega todos atendimentos abertos
         $atendimentos = Atendimento::getAbertos();
 
         foreach ($atendimentos as $atendimento) {
             $mesaId = (int) $atendimento->mesa;
 
             if (isset($mesas[$mesaId])) {
-                $mesas[$mesaId] = [
-                    'ocupada' => true,
-                    'atendimento' => $atendimento
-                ];
+
+                // ⚠️ garante apenas 1 atendimento por mesa
+                if (!$mesas[$mesaId]['ocupada']) {
+                    $mesas[$mesaId] = [
+                        'ocupada' => true,
+                        'atendimento' => $atendimento
+                    ];
+                }
             }
         }
 
@@ -63,20 +67,18 @@ class HomeController extends Controller
 
     public function atendimento($id)
     {
-        // Verifica se já existe um atendimento ativo para a mesa
-        $atendimento = Atendimento::where('mesa', '=', $id)
-            ->where('pagamento_data', 'IS', null)
-            ->first();
+        // 🔥 SEMPRE usa método centralizado
+        $atendimento = Atendimento::getAbertoPorMesa($id);
 
         if (!$atendimento) {
-            // Cria novo atendimento se não existir
+            // 🔥 cria atendimento com padrão único
             $atendimento = Atendimento::create([
                 'mesa' => $id,
                 'criacao_data' => date('Y-m-d H:i:s'),
+                'valor_total' => 0
             ]);
         }
 
-        // Redireciona usando route() em vez de redirect()
-        return (route('atendimentos', ['id' => $atendimento->id]))->redirect();
+        return route('atendimentos', ['id' => $atendimento->id])->redirect();
     }
 }
