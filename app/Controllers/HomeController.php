@@ -28,7 +28,7 @@ class HomeController extends Controller
         }
 
         // 🔥 pega todos atendimentos abertos
-        $atendimentos = Atendimento::getAbertos();
+        $atendimentos = Atendimento::all();
 
         foreach ($atendimentos as $atendimento) {
             $mesaId = (int) $atendimento->mesa;
@@ -41,6 +41,8 @@ class HomeController extends Controller
                         'ocupada' => true,
                         'atendimento' => $atendimento
                     ];
+                    var_dump($mesas);
+                    die();
                 }
             }
         }
@@ -68,7 +70,7 @@ class HomeController extends Controller
     public function atendimento($id)
     {
         // 🔥 SEMPRE usa método centralizado
-        $atendimento = Atendimento::getAbertoPorMesa($id);
+        $atendimento = Atendimento::find($id);
 
         if (!$atendimento) {
             // 🔥 cria atendimento com padrão único
