@@ -26,6 +26,12 @@ class AtendimentosController extends Controller
     {
         $atendimento = Atendimento::with(['pedidos.produto'])->findOrFail($id);
 
+        // 🔥 bloqueia acesso a atendimento já finalizado
+        if ($atendimento->pagamento_data !== null) {
+            NotifyComponent::error("Atendimento já finalizado!");
+            return Router::getRouteByName('home')->redirect();
+        }
+
         return view('atendimentos.list', [
             'atendimento' => $atendimento,
             'pedidos'     => $atendimento->pedidos
@@ -33,7 +39,7 @@ class AtendimentosController extends Controller
     }
 
     /**
-     * Tela de criação (listar pedidos disponíveis)
+     * Tela de criação (listar produtos/pedidos disponíveis)
      */
     public function create()
     {
@@ -61,6 +67,14 @@ class AtendimentosController extends Controller
             'quantidade' => 'required|integer|min:1',
         ]);
 
+        $atendimento = Atendimento::findOrFail($id);
+
+        // 🔥 bloqueia se já estiver finalizado
+        if ($atendimento->pagamento_data !== null) {
+            NotifyComponent::error("Atendimento já finalizado!");
+            return Router::getRouteByName('home')->redirect();
+        }
+
         DB::transaction(function () use ($request, $id) {
 
             $produto = Produto::findOrFail($request->produto_id);
@@ -70,6 +84,12 @@ class AtendimentosController extends Controller
                 'produto_id'     => $produto->id,
                 'quantidade'     => $request->quantidade,
                 'valor_un'       => $produto->preco,
+            ]);
+
+            // 🔥 atualiza total automaticamente
+            $atendimento = Atendimento::findOrFail($id);
+            $atendimento->update([
+                'valor_total' => $atendimento->getTotal()
             ]);
         });
 
@@ -100,11 +120,18 @@ class AtendimentosController extends Controller
                 'quantidade' => $request->quantidade,
                 'valor_un'   => $request->valor_un,
             ]);
+
+            // 🔥 atualiza total do atendimento
+            $atendimento = Atendimento::findOrFail($pedido->atendimento_id);
+            $atendimento->update([
+                'valor_total' => $atendimento->getTotal()
+            ]);
         });
 
         NotifyComponent::success("Pedido atualizado com sucesso!");
 
-        return route('atendimentos', ['id' => $id])->redirect();
+        $pedido = Pedido::findOrFail($id);
+        return route('atendimentos', ['id' => $pedido->atendimento_id])->redirect();
     }
 
     /**
@@ -121,6 +148,13 @@ class AtendimentosController extends Controller
             'valor_un'       => 'required|float'
         ]);
 
+        $atendimento = Atendimento::findOrFail($request->atendimento_id);
+
+        if ($atendimento->pagamento_data !== null) {
+            NotifyComponent::error("Atendimento já finalizado!");
+            return Router::getRouteByName('home')->redirect();
+        }
+
         DB::transaction(function () use ($request) {
 
             Pedido::create([
@@ -128,6 +162,12 @@ class AtendimentosController extends Controller
                 'produto_id'     => $request->produto_id,
                 'quantidade'     => $request->quantidade,
                 'valor_un'       => $request->valor_un,
+            ]);
+
+            // 🔥 atualiza total
+            $atendimento = Atendimento::findOrFail($request->atendimento_id);
+            $atendimento->update([
+                'valor_total' => $atendimento->getTotal()
             ]);
         });
 
@@ -137,49 +177,25 @@ class AtendimentosController extends Controller
     }
 
     /**
-     * Buscar ou criar atendimento por mesa
-     */
-    public function atendimentoId($id)
-    {
-        $nMesas = $_SESSION['N_MESAS'] ?? constant('N_MESAS');
-
-        if ($id < 1 || $id > $nMesas) {
-            NotifyComponent::error("Número de mesa inválido.");
-            return Router::getRouteByName('home')->redirect();
-        }
-
-        $atendimento = Atendimento::where('mesa', $id)
-            ->whereNull('pagamento_data')
-            ->first();
-
-        if (!$atendimento) {
-            $atendimento = Atendimento::create([
-                'mesa' => $id
-            ]);
-        }
-
-        $atendimento->load('pedidos.produto');
-
-        return view('atendimentos.list', [
-            'atendimento' => $atendimento,
-            'pedidos'     => $atendimento->pedidos
-        ], 'main');
-    }
-
-    /**
      * Finalizar atendimento
      */
     public function finalizarAtendimento($id)
     {
-        $atendimento = Atendimento::findOrFail($id);
+        $atendimento = Atendimento::with('pedidos')->findOrFail($id);
+
+        if ($atendimento->pedidos->isEmpty()) {
+            NotifyComponent::error("Não é possível finalizar um atendimento sem pedidos.");
+            return route('atendimentos', ['id' => $id])->redirect();
+        }
 
         DB::transaction(function () use ($atendimento) {
             $atendimento->update([
-                'pagamento_data' => date('Y-m-d H:i:s')
+                'pagamento_data' => date('Y-m-d H:i:s'),
+                'valor_total'    => $atendimento->getTotal()
             ]);
         });
 
-        NotifyComponent::success("Atendimento da mesa {$atendimento->mesa} finalizado com sucesso!");
+        NotifyComponent::success("Mesa {$atendimento->mesa} finalizada com sucesso!");
 
         return Router::getRouteByName('home')->redirect();
     }
@@ -190,12 +206,17 @@ class AtendimentosController extends Controller
     public function excluirPedido($id)
     {
         $pedido = Pedido::findOrFail($id);
-
         $atendimento_id = $pedido->atendimento_id;
 
         DB::transaction(function () use ($pedido) {
             $pedido->delete();
         });
+
+        // 🔥 atualiza total após exclusão
+        $atendimento = Atendimento::findOrFail($atendimento_id);
+        $atendimento->update([
+            'valor_total' => $atendimento->getTotal()
+        ]);
 
         NotifyComponent::success("Pedido excluído com sucesso!");
 
@@ -256,7 +277,7 @@ class AtendimentosController extends Controller
     }
 
     /**
-     * Deletar pedido (alternativo via form)
+     * Deletar pedido (via form)
      */
     public function destroy()
     {
@@ -266,16 +287,21 @@ class AtendimentosController extends Controller
             'id' => 'required|exists:pedidos,id'
         ]);
 
-        DB::transaction(function () use ($request) {
+        $pedido = Pedido::findOrFail($request->id);
+        $atendimento_id = $pedido->atendimento_id;
 
-            $pedido = Pedido::findOrFail($request->id);
-            $atendimento_id = $pedido->atendimento_id;
-
+        DB::transaction(function () use ($pedido) {
             $pedido->delete();
-
-            NotifyComponent::success("Pedido deletado com sucesso!");
-
-            return route('atendimentos', ['id' => $atendimento_id])->redirect();
         });
+
+        // 🔥 atualiza total
+        $atendimento = Atendimento::findOrFail($atendimento_id);
+        $atendimento->update([
+            'valor_total' => $atendimento->getTotal()
+        ]);
+
+        NotifyComponent::success("Pedido deletado com sucesso!");
+
+        return route('atendimentos', ['id' => $atendimento_id])->redirect();
     }
 }
