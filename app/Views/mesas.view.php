@@ -25,23 +25,36 @@
     <div class="row">
 
         <?php foreach ($mesas as $mesaKey => $mesa):
+
             $ocupada = $mesa['ocupada'];
             $atendimento = $mesa['atendimento'];
 
             $color = $ocupada ? 'danger' : 'success';
             $img = $ocupada ? 'ocupada' : 'livre';
+
+            // 🔥 tempo de atendimento
+            $tempo = null;
+            if ($ocupada && $atendimento->criacao_data) {
+                $inicio = new DateTime($atendimento->criacao_data);
+                $agora = new DateTime();
+                $tempo = $inicio->diff($agora)->format('%H:%I');
+            }
+
         ?>
 
             <div class="col-md-4 col-lg-3 mb-3">
-                <div class="card border-<?= $color ?>">
+                <div class="card border-<?= $color ?> shadow-sm">
 
-                    <div class="card-header">
-                        <div class="card-title h3 text-center text-<?= $color ?>">
+                    <!-- HEADER -->
+                    <div class="card-header text-center">
+                        <div class="card-title h3 text-<?= $color ?>">
                             Mesa <?= $mesaKey ?>
                         </div>
                     </div>
 
+                    <!-- BODY -->
                     <div class="card-body text-center">
+
                         <img src="<?= assets("/img/mesas/$img.png") ?>"
                             alt="Mesa <?= $mesaKey ?>"
                             class="img-fluid"
@@ -52,20 +65,38 @@
                                 <?= $ocupada ? 'Ocupada' : 'Livre' ?>
                             </span>
                         </div>
+
+                        <?php if ($ocupada): ?>
+
+                            <!-- 💰 TOTAL -->
+                            <div class="mt-2">
+                                <strong>R$ <?= number_format($atendimento->total, 2, ',', '.') ?></strong>
+                            </div>
+
+                            <!-- ⏱️ TEMPO -->
+                            <?php if ($tempo): ?>
+                                <div class="text-muted small">
+                                    ⏱️ <?= $tempo ?>
+                                </div>
+                            <?php endif; ?>
+
+                        <?php endif; ?>
+
                     </div>
 
+                    <!-- FOOTER -->
                     <div class="card-footer text-center">
 
                         <?php if ($ocupada): ?>
                             <div class="btn-group-vertical w-100">
 
-                                <!-- 🔥 Continua atendimento -->
+                                <!-- 🔥 CONTINUAR -->
                                 <a href="<?= route('mesa.atendimento', ['id' => $mesaKey]) ?>"
                                     class="btn btn-primary mb-2">
                                     <i class="fa fa-edit"></i> Atender
                                 </a>
 
-                                <!-- 🔥 Finalizar -->
+                                <!-- 🔥 FINALIZAR -->
                                 <form action="<?= route('atendimento.finalizar', ['id' => $atendimento->id]) ?>"
                                     method="post"
                                     onsubmit="return confirm('Deseja realmente finalizar este atendimento?')">
@@ -80,7 +111,7 @@
 
                         <?php else: ?>
 
-                            <!-- 🔥 Iniciar atendimento -->
+                            <!-- 🔥 INICIAR -->
                             <a href="<?= route('mesa.atendimento', ['id' => $mesaKey]) ?>"
                                 class="btn btn-success w-100">
                                 <i class="fa fa-play"></i> Iniciar Atendimento
