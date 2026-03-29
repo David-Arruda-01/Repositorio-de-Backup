@@ -27,7 +27,7 @@ class Atendimento extends Model
      */
     public function getTotalAttribute()
     {
-        // 🔥 Garante que não terá N+1
+        // 🔥 evita N+1
         $this->loadMissing('pedidos.produto');
 
         return $this->pedidos->sum(function ($pedido) {
@@ -63,14 +63,14 @@ class Atendimento extends Model
     }
 
     /**
-     * 🎯 Dados completos
+     * 🎯 Dados completos do atendimento
      */
     public function getDadosCompletos(): array
     {
         return [
             'atendimento' => [
                 'id' => $this->id,
-                'valor_total' => $this->total, // 🔥 usa accessor
+                'valor_total' => $this->total, // accessor
                 'data_criacao' => $this->criacao_data ?? null,
                 'mesa' => $this->mesa
             ],
@@ -79,7 +79,7 @@ class Atendimento extends Model
     }
 
     /**
-     * 📊 Mesas abertas
+     * 📊 Retorna estado das mesas
      */
     public static function getMesas()
     {
@@ -101,12 +101,42 @@ class Atendimento extends Model
     }
 
     /**
-     * 📂 Atendimentos abertos
+     * 📂 Retorna todos atendimentos abertos
+     */
+    public static function getAbertos()
+    {
+        return self::whereNull('pagamento_data')
+            ->with('pedidos.produto')
+            ->get();
+    }
+
+    /**
+     * 🔍 Retorna atendimento aberto por mesa
      */
     public static function getAbertoPorMesa($mesaId)
-{
-    return self::where('mesa', '=', $mesaId)
-        ->where('pagamento_data', 'IS', null)
-        ->first();
-}
+    {
+        return self::where('mesa', $mesaId)
+            ->whereNull('pagamento_data')
+            ->orderBy('id', 'desc') // garante o mais recente
+            ->with('pedidos.produto')
+            ->first();
+    }
+
+    /**
+     * 🚀 Busca ou cria atendimento automaticamente
+     */
+    public static function getOuCriarPorMesa($mesaId)
+    {
+        $atendimento = self::getAbertoPorMesa($mesaId);
+
+        if (!$atendimento) {
+            $atendimento = self::create([
+                'mesa' => $mesaId,
+                'criacao_data' => date('Y-m-d H:i:s'),
+                'valor_total' => 0
+            ]);
+        }
+
+        return $atendimento;
+    }
 }
