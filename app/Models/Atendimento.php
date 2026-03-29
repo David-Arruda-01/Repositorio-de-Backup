@@ -103,10 +103,10 @@ class Atendimento extends Model
     /**
      * 📂 Atendimentos abertos
      */
-    public static function getAbertos()
-    {
-        return self::whereNull('pagamento_data')
-            ->whereNotNull('mesa')
-            ->get();
-    }
+    public static function getAbertoPorMesa($mesaId)
+{
+    return self::where('mesa', '=', $mesaId)
+        ->where('pagamento_data', 'IS', null)
+        ->first();
+}
 }
