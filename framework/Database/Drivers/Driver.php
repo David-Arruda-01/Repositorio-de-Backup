@@ -65,16 +65,16 @@ abstract class Driver
         return $stm;
     }
 
-   public function insert($table, array $data)
-{
-    $columns = implode(', ', array_keys($data));
-    $placeholders = implode(', ', array_map(fn($k) => ":$k", array_keys($data)));
-    $this->sql = "INSERT INTO $table ($columns) VALUES ($placeholders);";
-    $this->data = $data;
-    return $this;
-}
+    public function insert($table, array $data)
+    {
+        $columns = implode(', ', array_keys($data));
+        $placeholders = implode(', ', array_map(fn($k) => ":$k", array_keys($data)));
+        $this->sql = "INSERT INTO $table ($columns) VALUES ($placeholders);";
+        $this->data = $data;
+        return $this;
+    }
 
-    protected function compileBuilder(Builder $builder = null)
+    protected function compileBuilder(?Builder $builder = null)
     {
         if ($builder) {
             return $builder->compiler();
@@ -98,7 +98,7 @@ abstract class Driver
         return $sql;
     }
 
-    protected function compileLimit(int $limit = null, int $offset = null)
+    protected function compileLimit(?int $limit = null, ?int $offset = null)
     {
         if (is_null($limit)) {
             return "";
@@ -109,7 +109,7 @@ abstract class Driver
     }
 
 
-    public function select($table, $columns = ['*'], Builder $builder = null, array $orders = [], int $limit = null, int $offset = null)
+    public function select($table, $columns = ['*'], ?Builder $builder = null, array $orders = [], ?int $limit = null, ?int $offset = null)
     {
         $columns = implode(', ', $columns);
         // "SELECT * FROM table;"
@@ -120,7 +120,7 @@ abstract class Driver
         return $this;
     }
 
-    public function update($table, array $data, Builder $builder = null)
+    public function update($table, array $data, ?Builder $builder = null)
     {
         //UPDATE produtos SET nome = 'Halls', descricao = 'Bala Halls Mentolada' where id = 55
         $sql = "UPDATE $table SET ";
@@ -135,7 +135,7 @@ abstract class Driver
         return $this;
     }
 
-    public function delete($table, Builder $builder = null)
+    public function delete($table, ?Builder $builder = null)
     {
         $sql = "DELETE FROM $table";
         [$where, $this->data] = $this->compileBuilder($builder);
@@ -150,14 +150,8 @@ abstract class Driver
         return $this->exec();
     }
 
-    public function lastInsertId(string $table){
+    public function lastInsertId(string $table)
+    {
         return $this->getConnection()->lastInsertId($table);
     }
-
-
-
-
-
-
-
 }

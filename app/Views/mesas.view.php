@@ -28,9 +28,12 @@
 
             $ocupada = $mesa['ocupada'];
             $atendimento = $mesa['atendimento'];
+            $reservada = $mesa['reservada'] ?? false;
 
-            $color = $ocupada ? 'danger' : 'success';
-            $img = $ocupada ? 'ocupada' : 'livre';
+            $color = $ocupada ? ($reservada ? 'warning' : 'danger') : 'success';
+            $img = $ocupada
+                ? ($reservada ? 'reservada' : 'ocupada')
+                : 'livre';
 
             // 🔥 tempo de atendimento
             $tempo = null;
@@ -62,7 +65,7 @@
 
                         <div class="mt-2">
                             <span class="badge badge-<?= $color ?>">
-                                <?= $ocupada ? 'Ocupada' : 'Livre' ?>
+                                <?= $ocupada ? ($reservada ? 'Reservada' : 'Ocupada') : 'Livre' ?>
                             </span>
                         </div>
 
@@ -91,32 +94,63 @@
                             <div class="btn-group-vertical w-100">
 
                                 <!-- 🔥 CONTINUAR -->
-                                <a href="<?= route('mesa.atendimento', ['id' => $mesaKey]) ?>"
-                                    class="btn btn-primary mb-2">
+                                <a href="<?= route('atendimentos', ['id' => $atendimento->id]) ?>"
+                                    class="btn btn-primary mb-2 w-100">
                                     <i class="fa fa-edit"></i> Atender
                                 </a>
 
                                 <!-- 🔥 FINALIZAR -->
-                                <form action="<?= route('atendimento.finalizar', ['id' => $atendimento->id]) ?>"
+                                <?php if (!$reservada): ?>
+                                    <form action="<?= route('atendimento.finalizar', ['id' => $atendimento->id]) ?>"
+                                        method="post"
+                                        onsubmit="return confirm('Deseja realmente finalizar este atendimento?')"
+                                        class="mb-2">
+
+                                        <?= CSRF() ?>
+
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="fa fa-check"></i> Finalizar Atendimento
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+
+                                <!-- 🗑️ DELETAR -->
+                                <form action="<?= route('atendimento.delete') ?>"
                                     method="post"
-                                    onsubmit="return confirm('Deseja realmente finalizar este atendimento?')">
+                                    onsubmit="return confirm('Deseja realmente deletar este atendimento? Isso removerá permanentemente todos os dados!')"
+                                    class="mb-2">
 
                                     <?= CSRF() ?>
+                                    <input type="hidden" name="id" value="<?= $atendimento->id ?>">
 
-                                    <button type="submit" class="btn btn-danger w-100">
-                                        <i class="fa fa-check"></i> Finalizar Atendimento
+                                    <button type="submit" class="btn btn-dark w-100">
+                                        <i class="fa fa-trash"></i> Deletar Atendimento
                                     </button>
                                 </form>
                             </div>
 
                         <?php else: ?>
+                            <div class="btn-group-vertical w-100">
 
-                            <!-- 🔥 INICIAR -->
-                            <a href="<?= route('mesa.atendimento', ['id' => $mesaKey]) ?>"
-                                class="btn btn-success w-100">
-                                <i class="fa fa-play"></i> Iniciar Atendimento
-                            </a>
+                                <!-- 🔥 INICIAR -->
+                                <a href="<?= route('mesa.atendimento', ['id' => $mesaKey]) ?>"
+                                    class="btn btn-success mb-2 w-100">
+                                    <i class="fa fa-play"></i> Iniciar Atendimento
+                                </a>
 
+                                <!-- 🟡 RESERVAR -->
+                                <form action="<?= route('mesa.reservar', ['id' => $mesaKey]) ?>"
+                                    method="post"
+                                    class="mb-2">
+
+                                    <?= CSRF() ?>
+
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        <i class="fa fa-clock"></i> Reservar
+                                    </button>
+                                </form>
+
+                            </div>
                         <?php endif; ?>
 
                     </div>

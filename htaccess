@@ -1,8 +1,8 @@
 RewriteEngine On
 
-# Ignora arquivos e pastas reais.
+RewriteBase /restaurante/public/
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Redireciona tudo para o index.
 RewriteRule ^(.*)$ index.php?request_uri=$1 [QSA,L]

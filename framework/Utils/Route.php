@@ -116,7 +116,10 @@ class Route
 
         session::getInstance()->requestRegister();
 
-        return call_user_func_array($callback, $this->paramns);
+        // convert array keys to numeric indices to evitar Named Parameter error no call_user_func_array
+        $params = array_values($this->paramns);
+
+        return call_user_func_array($callback, $params);
     }
 
     public function isActive()

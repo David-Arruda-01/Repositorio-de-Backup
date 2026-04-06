@@ -5,23 +5,15 @@ namespace App\Models;
 use Fmk\MVC\Model;
 use Fmk\Database\DB;
 
-class Config extends Model {
-/*
-    public static function all(){
-        $all = parent::all();
-        $result = [];
-        foreach($all as $const){
-            $result[$const->name] = $const->value;
-        }
-        return $result;
-    }
-*/
-    public static function all() {
+class Config extends Model
+{
+    public static function all()
+    {
         $all = parent::all();
         $result = [];
         foreach ($all as $const) {
             // Criando um objeto padrão
-            $obj = new $const; 
+            $obj = new $const;
             $obj->id = $const->id;
             $obj->name = $const->name;
             $obj->label = $const->label;
@@ -31,16 +23,17 @@ class Config extends Model {
         return $result;
     }
 
-    public static function getConfig(){
+    public static function getConfig()
+    {
         $all = self::all();
         $result = [];
-        foreach($all as $config){
+        foreach ($all as $config) {
             $result[$config->name] = $config->value;
         }
         return $result;
     }
 
-     /**
+    /**
      * Retorna o valor de uma configuração pelo nome.
      *
      * @param string $name

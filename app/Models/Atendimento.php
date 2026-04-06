@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Fmk\Databases\Query;
 use Fmk\MVC\Model;
 use App\Models\Pedido;
 
@@ -13,13 +12,12 @@ class Atendimento extends Model
         return $this->hasMany(Pedido::class, 'atendimento_id');
     }
 
-    public function getTotal()
+    public function __get($name)
     {
-        $total = 0;
-        foreach ($this->pedidos as $pedido) {
-            $total += $pedido->valor_un * $pedido->quantidade;
+        if ($name === 'total') {
+            return $this->getTotal();
         }
-        return $total;
+        return parent::__get($name);
     }
 
     public static function getMesas()
@@ -34,5 +32,19 @@ class Atendimento extends Model
             $mesas[$atendimento->mesa] = $atendimento;
         }
         return $mesas;
+    }
+
+    public function getTotal()
+    {
+        $total = 0;
+        foreach ($this->pedidos() as $pedido) {
+            $valorPedido = $pedido->valor_un ?? null;
+            if ($valorPedido === null) {
+                $produto = $pedido->produto()->first();
+                $valorPedido = $produto->valor_un ?? $produto->produto_id ?? 0;
+            }
+            $total += $pedido->quantidade * $valorPedido;
+        }
+        return $total;
     }
 }

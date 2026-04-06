@@ -23,26 +23,25 @@ class HomeController extends Controller
         for ($i = 1; $i <= $nMesas; $i++) {
             $mesas[$i] = [
                 'ocupada' => false,
-                'atendimento' => null
+                'atendimento' => null,
+                'reservada' => false
             ];
         }
 
-        // 🔥 pega todos atendimentos abertos
-        $atendimentos = Atendimento::all();
+        // 🔥 SOMENTE atendimentos abertos
+        $atendimentos = Atendimento::where('pagamento_data', 'IS', null)->get();
 
         foreach ($atendimentos as $atendimento) {
             $mesaId = (int) $atendimento->mesa;
 
             if (isset($mesas[$mesaId])) {
 
-                // ⚠️ garante apenas 1 atendimento por mesa
                 if (!$mesas[$mesaId]['ocupada']) {
                     $mesas[$mesaId] = [
                         'ocupada' => true,
-                        'atendimento' => $atendimento
+                        'atendimento' => $atendimento,
+                        'reservada' => (bool) $atendimento->reservada
                     ];
-                    var_dump($mesas);
-                    die();
                 }
             }
         }
@@ -53,7 +52,6 @@ class HomeController extends Controller
     public function alterarMesas()
     {
         session_start();
-
         $acao = $_POST['acao'] ?? null;
         if (!$acao) return Router::getRouteByName('home')->redirect();
 
@@ -67,20 +65,58 @@ class HomeController extends Controller
         return Router::getRouteByName('home')->redirect();
     }
 
-    public function atendimento($id)
+    public function atendimento($mesaId)
     {
-        // 🔥 SEMPRE usa método centralizado
-        $atendimento = Atendimento::find($id);
+        // Remove atendimento finalizado antigo (se existir)
+        $atendimentoFinalizado = Atendimento::where('mesa', '=', $mesaId)
+            ->orderDesc('id')
+            ->first();
 
-        if (!$atendimento) {
-            // 🔥 cria atendimento com padrão único
+        if ($atendimentoFinalizado && $atendimentoFinalizado->pagamento_data !== null) {
+
+            $pedidos = \App\Models\Pedido::where('atendimento_id', '=', $atendimentoFinalizado->id)->get();
+            foreach ($pedidos as $pedido) {
+                $pedido->delete();
+            }
+
+            $pagamentos = \App\Models\Pagamento::where('atendimento_id', '=', $atendimentoFinalizado->id)->get();
+            foreach ($pagamentos as $pagamento) {
+                $pagamento->delete();
+            }
+
+            $atendimentoFinalizado->delete();
+        }
+
+        // 🔥 Cria ou atualiza atendimento como NÃO reservado
+        $atendimento = $this->salvarAtendimento($mesaId, null);
+
+        return route('atendimentos', ['id' => $atendimento->id])->redirect();
+    }
+
+    public function reservar($mesaId)
+    {
+        $this->salvarAtendimento($mesaId, 1); // 1 = reservado
+
+        return route('home')->redirect();
+    }
+    private function salvarAtendimento($mesaId, $reservada = null)
+    {
+        $atendimento = Atendimento::where('mesa', '=', $mesaId)
+            ->where('pagamento_data', 'IS', null)
+            ->orderDesc('id')
+            ->first();
+
+        if ($atendimento) {
+            $atendimento->reservada = $reservada;
+            $atendimento->save();
+        } else {
             $atendimento = Atendimento::create([
-                'mesa' => $id,
+                'mesa' => $mesaId,
                 'criacao_data' => date('Y-m-d H:i:s'),
-                'valor_total' => 0
+                'reservada' => $reservada
             ]);
         }
 
-        return route('atendimentos', ['id' => $atendimento->id])->redirect();
+        return $atendimento;
     }
 }

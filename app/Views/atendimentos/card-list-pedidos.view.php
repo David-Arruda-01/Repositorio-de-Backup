@@ -17,6 +17,8 @@
 
             <tbody>
 
+                <?php $pedidos = $pedidos ?? ($atendimento->pedidos ?? []); ?>
+
                 <?php if (!empty($pedidos)): ?>
 
                     <?php foreach ($pedidos as $pedido): ?>
@@ -25,14 +27,20 @@
                         // 🔥 busca produto (lazy loading)
                         $produto = $pedido->produto()->first();
 
-                        $nome = $produto->nome ?? 'Produto não encontrado';
-                        $valor = $pedido->valor_unitario ?? 0;
+                        $nome = $pedido->nome_produto ?? $produto->nome ?? 'Produto não encontrado';
+                        $descricao = $pedido->descricao_produto ?? $produto->descricao ?? '';
+                        $valor = $pedido->valor_un ?? $produto->valor_un ?? $produto->preco ?? 0;
                         $qtd = $pedido->quantidade ?? 0;
                         $subtotal = $valor * $qtd;
                         ?>
 
                         <tr>
-                            <td><?= $nome ?></td>
+                            <td>
+                                <strong><?= $nome ?></strong>
+                                <?php if (!empty($descricao)): ?>
+                                    <br><small><?= $descricao ?></small>
+                                <?php endif; ?>
+                            </td>
 
                             <td><?= $qtd ?></td>
 
@@ -45,10 +53,12 @@
                             </td>
 
                             <td>
-                                <button class="btn btn-sm btn-danger"
-                                    onclick="excluirPedido(<?= $pedido->id ?>)">
-                                    <i class="fa fa-trash"></i>
-                                </button>
+                                <form action="/pedido/<?= $pedido->id ?>/produto/excluir" method="post" style="display:inline; margin:0; padding:0;">
+                                    <?= csrf() ?>
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este item do pedido?');">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
 
