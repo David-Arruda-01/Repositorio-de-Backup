@@ -37,14 +37,21 @@ class Atendimento extends Model
     public function getTotal()
     {
         $total = 0;
-        foreach ($this->pedidos() as $pedido) {
-            $valorPedido = $pedido->valor_un ?? null;
-            if ($valorPedido === null) {
-                $produto = $pedido->produto()->first();
-                $valorPedido = $produto->valor_un ?? $produto->produto_id ?? 0;
+
+        foreach ($this->pedidos as $pedido) {
+
+            // Usa direto o valor do pedido (melhor prática)
+            if (!empty($pedido->valor_un)) {
+                $valor = $pedido->valor_un;
+            } else {
+                // fallback: busca do produto
+                $produto = $pedido->produto;
+                $valor = $produto ? $produto->valor_un : 0;
             }
-            $total += $pedido->quantidade * $valorPedido;
+
+            $total += $pedido->quantidade * $valor;
         }
+
         return $total;
     }
 }

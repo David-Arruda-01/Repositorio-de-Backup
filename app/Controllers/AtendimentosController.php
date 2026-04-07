@@ -44,9 +44,20 @@ class AtendimentosController extends Controller
 
     private function atualizarTotal($atendimento_id)
     {
+        $pedidos = Pedido::where('atendimento_id', '=', $atendimento_id)->get();
 
-        // O total é calculado dinamicamente no método getTotal() do Model Atendimento
-        // Não há necessidade de salvar em campo, pois é sempre atual
+        $total = 0;
+
+        foreach ($pedidos as $pedido) {
+            $total += $pedido->quantidade * $pedido->valor_un;
+        }
+
+        $atendimento = Atendimento::find($atendimento_id);
+
+        if ($atendimento) {
+            $atendimento->total = $total;
+            $atendimento->save();
+        }
     }
 
     // ===========================

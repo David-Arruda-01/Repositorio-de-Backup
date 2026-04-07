@@ -1,8 +1,7 @@
 <div class="card card-user">
     <?php if (isset($atendimento) && $atendimento): ?>
         <div class="card-header">
-            <?= constant('ID') ?>
-            <h5 class="card-title">Atendimento da Mesa <?= $atendimento->id ?? '' ?></h5>
+            <h5 class="card-title">Atendimento da Mesa <?= $atendimento->mesa ?? '' ?></h5>
         </div>
 
         <div class="card-body px-4">
@@ -29,16 +28,15 @@
                                                 <div class="col-md-6 d-flex justify-content-center align-items-center">
                                                     <div class="card text-white bg-info mb-3 w-100">
                                                         <div class="card-body">
-                                                            <?= constant('TOTAL') ?>
                                                             <div class="">
                                                                 Total:
                                                             </div>
                                                             <h2 class="text-center" id="total_atendimento">
-                                                                R$ <?= number_format($atendimento->getTotal(), 2, ',', '.') ?>
+                                                                R$ <?= number_format($atendimento->total ?? 0, 2, ',', '.') ?>
                                                             </h2>
                                                         </div>
                                                         <div class="card-footer text-dark">
-                                                            Cod. Atendimento <?= is_array($atendimento) ? $atendimento['id'] : $atendimento->id ?>
+                                                            Cod. Atendimento <?= is_array($atendimento) ? $atendimento['id'] : $atendimento->mesa ?>
                                                         </div>
                                                     </div>
                                                 </div>
