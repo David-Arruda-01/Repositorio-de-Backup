@@ -90,7 +90,7 @@ class HomeController extends Controller
         // 🔥 Cria ou atualiza atendimento como NÃO reservado
         $atendimento = $this->salvarAtendimento($mesaId, null);
 
-        return route('atendimentos', ['id' => $atendimento->id])->redirect();
+        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
     }
 
     public function reservar($mesaId)

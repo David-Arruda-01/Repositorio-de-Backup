@@ -94,7 +94,7 @@
                             <div class="btn-group-vertical w-100">
 
                                 <!-- 🔥 CONTINUAR -->
-                                <a href="<?= route('atendimentos', ['id' => $atendimento->id]) ?>"
+                                <a href="<?= route('atendimentos', ['id' => $atendimento->mesa]) ?>"
                                     class="btn btn-primary mb-2 w-100">
                                     <i class="fa fa-edit"></i> Atender
                                 </a>
