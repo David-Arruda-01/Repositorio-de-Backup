@@ -88,7 +88,6 @@ class ProdutosController extends Controller
             return route('produto.list')->redirect();
         }
         
-        $data = compact('nome', 'descricao', 'valor_un', 'unidade_medida', 'disponivel');
         $produto = Produto::find($id);
         
         if (!$produto) {
@@ -96,7 +95,13 @@ class ProdutosController extends Controller
             return route('produto.list')->redirect();
         }
         
-        $produto->save($data);
+        $produto->nome = $nome;
+        $produto->descricao = $descricao;
+        $produto->valor_un = $valor_un;
+        $produto->unidade_medida = $unidade_medida;
+        $produto->disponivel = $disponivel;
+
+        $produto->save();
         NotifyComponent::success("Produto $nome alterado com sucesso!");
         return route('produto.list')->redirect();
     }
