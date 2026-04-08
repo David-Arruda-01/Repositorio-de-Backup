@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Components\NotifyComponent;
 use App\Models\Atendimento;
 use App\Models\Pagamento;
+use App\Models\PagamentoTipo;
 use App\Models\Produto;
 use App\Models\Pedido;
 use Fmk\MVC\Controller;
@@ -159,7 +160,7 @@ class AtendimentosController extends Controller
     // ➕ ADICIONAR PRODUTO
     // ===========================
 
-    public function adicionarProduto($id)
+    public function adicionarProduto($mesa)
     {
         $request = Request::getInstance();
 
@@ -168,18 +169,18 @@ class AtendimentosController extends Controller
 
         if (!$request->validation()) {
             NotifyComponent::error("Erros de validação no formulário.");
-            $atendimento = Atendimento::find($id);
-            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+            $atendimento = Atendimento::find($mesa);
+            return route('atendimentos', ['mesa' => $atendimento->mesa])->redirect();
         }
 
-        $atendimento = $this->findOrFail(Atendimento::class, $id);
+        $atendimento = $this->findOrFail(Atendimento::class, $mesa);
         $this->checkFinalizado($atendimento);
 
         try {
             $produto = $this->findOrFail(Produto::class, $produto_id);
 
             Pedido::create([
-                'atendimento_id'   => $id,
+                'atendimento_id'   => $mesa,
                 'produto_id'       => $produto->id,
                 'nome_produto'     => $produto->nome ?? null,
                 'descricao_produto' => $produto->descricao ?? null,
@@ -194,17 +195,16 @@ class AtendimentosController extends Controller
                 $atendimento->save();
             }
 
-            $this->atualizarTotal($id);
+            $this->atualizarTotal($mesa);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao adicionar produto: ' . $e->getMessage());
-            $atendimento = Atendimento::find($id);
-            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+            $atendimento = Atendimento::find($mesa);
+            return route('atendimentos', ['mesa' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success('Produto adicionado com sucesso!');
 
-        $atendimento = Atendimento::find($id);
-        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+        return route('atendimentos', ['mesa' => $atendimento->mesa])->redirect();
     }
 
     // ===========================
@@ -386,8 +386,7 @@ class AtendimentosController extends Controller
 
         NotifyComponent::success("Pedido excluído!");
 
-        $atendimento = Atendimento::find($atendimento_id);
-        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+        return route('atendimentos', ['id' => $atendimento_id])->redirect();
     }
 
     // =======================================================================
@@ -409,8 +408,7 @@ class AtendimentosController extends Controller
 
         NotifyComponent::success("Produto do pedido excluído!");
 
-        $atendimento = Atendimento::find($atendimento_id);
-        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+        return route('atendimentos', ['id' => $atendimento_id])->redirect();
     }
 
     // ===========================
@@ -421,23 +419,26 @@ class AtendimentosController extends Controller
     {
         $request = Request::getInstance();
 
-        $valor = $request->validate('valor', 'Valor')->required();
-        $metodo_pagamento = $request->validate('metodo_pagamento', 'Método de Pagamento')->required();
+        $pagamento_tipo_id = $request->validate('pagamento_tipo_id', 'Tipo de Pagamento')->required()->isInt();
+        $valor = $request->validate('valor', 'Valor')->required()->isFloat();
+
+        $atendimento = Atendimento::find($id);
 
         if (!$request->validation()) {
             NotifyComponent::error("Erros de validação no formulário.");
-            $atendimento = Atendimento::find($id);
-            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+            return route('atendimentos', ['id' => $id])->redirect();
         }
 
         try {
-            $this->findOrFail(Atendimento::class, $id);
+            $atendimento = $this->findOrFail(Atendimento::class, $id);
+            $this->checkFinalizado($atendimento);
+
+            $pagamentoTipo = $this->findOrFail(PagamentoTipo::class, $pagamento_tipo_id);
 
             Pagamento::create([
                 'atendimento_id'   => $id,
-                'valor'            => $valor,
-                'metodo_pagamento' => $metodo_pagamento,
-                'data_pagamento'   => date('Y-m-d H:i:s')
+                'pagamento_tipo_id' => $pagamentoTipo->id,
+                'valor'            => (float) $valor,
             ]);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao registrar pagamento: ' . $e->getMessage());
@@ -445,7 +446,7 @@ class AtendimentosController extends Controller
             return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
-        NotifyComponent::success("Pagamento registrado!");
+        NotifyComponent::success("Pagamento registrado com sucesso!");
 
         $atendimento = Atendimento::find($id);
         return route('atendimentos', ['id' => $atendimento->mesa])->redirect();

@@ -6,51 +6,51 @@ use Fmk\MVC\Model;
 
 class Pagamento extends Model
 {
+    protected $fillable = [
+        'atendimento_id',
+        'pagamento_tipo_id',
+        'valor',
+        'observacao',
+    ];
+
     protected $visible = [
         'id',
         'atendimento_id',
+        'pagamento_tipo_id',
         'valor',
-        'metodo_pagamento',
-        'data_pagamento'
+        'observacao',
+        'criacao_data',
+        'alteracao_data',
+        'exclusao_data',
     ];
 
-    /**
-     * 🔗 Pagamento pertence a um atendimento
-     */
     public function atendimento()
     {
         return $this->belongsTo(Atendimento::class, 'atendimento_id');
     }
 
-    /**
-     * 📊 Escopo: pagamentos de um atendimento
-     */
+    public function tipo()
+    {
+        return $this->belongsTo(PagamentoTipo::class, 'pagamento_tipo_id');
+    }
+
     public function scopeDoAtendimento($query, $atendimentoId)
     {
         return $query->where('atendimento_id', $atendimentoId);
     }
 
-    /**
-     * 📊 Escopo: ordenar por data
-     */
     public function scopeOrdenado($query)
     {
-        return $query->orderBy('data_pagamento', 'desc');
+        return $query->orderBy('criacao_data', 'desc');
     }
 
-    /**
-     * 💰 Formatar valor (Accessor)
-     */
     public function getValorFormatadoAttribute()
     {
         return number_format($this->valor ?? 0, 2, ',', '.');
     }
 
-    /**
-     * 💳 Método formatado
-     */
     public function getMetodoFormatadoAttribute()
     {
-        return ucfirst($this->metodo_pagamento);
+        return $this->tipo->descricao ?? '';
     }
 }

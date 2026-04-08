@@ -87,21 +87,16 @@ class ProdutosController extends Controller
             NotifyComponent::error("ID do produto inválido.");
             return route('produto.list')->redirect();
         }
-
+        
+        $data = compact('nome', 'descricao', 'valor_un', 'unidade_medida', 'disponivel');
         $produto = Produto::find($id);
 
         if (!$produto) {
             NotifyComponent::error("Produto não encontrado.");
             return route('produto.list')->redirect();
         }
-
-        $produto->nome = $nome;
-        $produto->descricao = $descricao;
-        $produto->valor_un = $valor_un;
-        $produto->unidade_medida = $unidade_medida;
-        $produto->disponivel = $disponivel;
-
-        $produto->save();
+        
+        $produto->save($data);
         NotifyComponent::success("Produto $nome alterado com sucesso!");
         return route('produto.list')->redirect();
     }

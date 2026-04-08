@@ -1,7 +1,8 @@
 <div class="card card-user">
   <!-- Alterar action para a rota de update e adicionar method PUT -->
-  <form action="<?= route('produto.update', ['id' => $id]) ?>" method="POST">
-
+  <form action="/produto/<?= $id ?>" method="POST"> 
+    <input type="hidden" name="_method" value="PUT">
+    
     <div class="card-header">
       <h5 class="card-title">Atualizar Produto</h5>
     </div>
