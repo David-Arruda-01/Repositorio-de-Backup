@@ -468,7 +468,7 @@ class AtendimentosController extends Controller
     public function destroy()
     {
         $request = Request::getInstance();
-        $mesa = $request->validate('mesa')->required();
+        $mesa = (string) $request->validate('mesa')->required()->getValue();
 
         try {
             $atendimento = $this->findAtendimentoByMesa($mesa);
