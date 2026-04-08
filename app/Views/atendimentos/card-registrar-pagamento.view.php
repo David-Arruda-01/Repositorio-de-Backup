@@ -2,7 +2,7 @@
 
 use App\Models\PagamentoTipo;
 
-$tiposPagamento = PagamentoTipo::all();
+$pagamentos_tipo = PagamentoTipo::all();
 ?>
 
 <div class="modal fade" id="registrar-pagamento" tabindex="-1" role="dialog" aria-labelledby="registrarPagamentoLabel" aria-hidden="true">
@@ -23,9 +23,9 @@ $tiposPagamento = PagamentoTipo::all();
                         <label for="pagamento_tipo_id">Tipo de Pagamento</label>
                         <select class="form-control" id="pagamento_tipo_id" name="pagamento_tipo_id" required>
                             <option value="">Selecione um tipo de pagamento</option>
-                            <?php foreach ($tiposPagamento as $tipoPagamento): ?>
-                                <option value="<?= $tipoPagamento->id ?>">
-                                    <?= $tipoPagamento->descricao ?>
+                            <?php foreach ($pagamentos_tipo as $pagamentos_tipos): ?>
+                                <option value="<?= $pagamentos_tipos->id ?>">
+                                    <?= $pagamentos_tipos->descricao ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
