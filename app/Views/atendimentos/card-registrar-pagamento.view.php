@@ -16,11 +16,11 @@
                         <label for="pagamento_tipo_id">Tipo de Pagamento</label>
                         <select class="form-control" id="pagamento_tipo_id" name="pagamento_tipo_id" required>
                             <option value="">Selecione um tipo de pagamento</option>
-                            <?php foreach ($tiposPagamento as $tipoPagamento): ?>
-                                <option value="<?= $tipoPagamento->id ?>">
-                                    <?= $tipoPagamento->descricao ?>
-                                </option>
-                            <?php endforeach; ?>
+                            <option value="1">Dinheiro</option>
+                            <option value="2">Cartão de Débito</option>
+                            <option value="3">Cartão de Crédito</option>
+                            <option value="4">PIX</option>
+                            <option value="5">Promoção da Loja</option>
                         </select>
                     </div>
 
