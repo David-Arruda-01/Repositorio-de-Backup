@@ -1,5 +1,6 @@
-<div class="card card-user">
-    <?php if (isset($atendimento) && $atendimento): ?>
+<?php if ($atendimento): ?>
+    <?php $template->title = 'Atendimento' ?>
+    <div class="card card-user">
         <div class="card-header">
             <h5 class="card-title">Atendimento da Mesa <?= $atendimento->mesa ?? '' ?></h5>
         </div>
@@ -108,22 +109,22 @@
                 </div>
             </div>
         </div>
-</div>
+    </div>
 
-<!-- Modal de registrar pagamento -->
-<?php if (file_exists(view_path('atendimentos.card-registrar-pagamento'))): ?>
-    <!-- O card de registro de pagamento também pode mostrar a lista se implementado -->
-<?php endif; ?>
+    <!-- Modal de registrar pagamento -->
+    <?php if (file_exists(view_path('atendimentos.card-registrar-pagamento'))): ?>
+        <!-- O card de registro de pagamento também pode mostrar a lista se implementado -->
+    <?php endif; ?>
 
-<!-- Modal de finalizar atendimento -->
-<?php if (file_exists(view_path('atendimentos.card-finalizar-atendimento'))): ?>
-    <?= view('atendimentos.card-finalizar-atendimento', ['atendimento' => $atendimento]); ?>
-<?php endif; ?>
+    <!-- Modal de finalizar atendimento -->
+    <?php if (file_exists(view_path('atendimentos.card-finalizar-atendimento'))): ?>
+        <?= view('atendimentos.card-finalizar-atendimento', ['atendimento' => $atendimento]); ?>
+    <?php endif; ?>
 
-<!-- Modal de adicionar produto -->
-<?php if (file_exists(view_path('atendimentos.card-adicionar-produto'))): ?>
-    <?= view('atendimentos.card-adicionar-produto', ['atendimento' => $atendimento]); ?>
-<?php endif; ?>
+    <!-- Modal de adicionar produto -->
+    <?php if (file_exists(view_path('atendimentos.card-adicionar-produto'))): ?>
+        <?= view('atendimentos.card-adicionar-produto', ['atendimento' => $atendimento]); ?>
+    <?php endif; ?>
 
 <?php else: ?>
     <div class="card-header">

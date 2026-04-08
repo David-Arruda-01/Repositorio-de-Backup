@@ -64,20 +64,25 @@ class AtendimentosController extends Controller
     // 📋 INDEX
     // ===========================
 
-    public function index($id)
+    public function index($mesa)
     {
-        $atendimento = $this->findOrFail(Atendimento::class, $id);
+        $atendimento = Atendimento::where('mesa', '=', $mesa)
+            ->where('pagamento_data', 'IS', null)
+            ->first();
+
+        if (!$atendimento) {
+            NotifyComponent::error("Atendimento não encontrado para a mesa $mesa");
+            return Router::getRouteByName('home')->redirect();
+        }
 
         $this->checkFinalizado($atendimento);
 
-        $pedidos = Pedido::where('atendimento_id', '=', $id)->get();
+        $pedidos = Pedido::where('atendimento_id', '=', $atendimento->id)->get();
 
         return view('atendimentos.list', [
             'atendimento' => $atendimento,
             'pedidos'     => $pedidos
         ], 'main');
-        // var_dump($atendimento);
-        // die();
     }
 
     // ===========================
@@ -163,7 +168,8 @@ class AtendimentosController extends Controller
 
         if (!$request->validation()) {
             NotifyComponent::error("Erros de validação no formulário.");
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         $atendimento = $this->findOrFail(Atendimento::class, $id);
@@ -191,12 +197,14 @@ class AtendimentosController extends Controller
             $this->atualizarTotal($id);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao adicionar produto: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success('Produto adicionado com sucesso!');
 
-        return route('atendimentos', ['id' => $id])->redirect();
+        $atendimento = Atendimento::find($id);
+        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
     }
 
     // ===========================
@@ -213,7 +221,8 @@ class AtendimentosController extends Controller
 
         if (!$request->validation()) {
             NotifyComponent::error("Erros de validação no formulário.");
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         try {
@@ -227,15 +236,17 @@ class AtendimentosController extends Controller
             $this->atualizarTotal($pedido->atendimento_id);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao atualizar pedido: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success("Pedido atualizado!");
 
         $pedido = $this->findOrFail(Pedido::class, $id);
 
+        $atendimento = Atendimento::find($pedido->atendimento_id);
         return route('atendimentos', [
-            'id' => $pedido->atendimento_id
+            'id' => $atendimento->mesa
         ])->redirect();
     }
 
@@ -256,7 +267,8 @@ class AtendimentosController extends Controller
 
         if (!$request->validation()) {
             NotifyComponent::error("Erros de validação no formulário.");
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         $atendimento = $this->findOrFail(Atendimento::class, $atendimento_id);
@@ -283,13 +295,15 @@ class AtendimentosController extends Controller
             $this->atualizarTotal($request->atendimento_id);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao criar pedido: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $request->atendimento_id])->redirect();
+            $atendimento = Atendimento::find($request->atendimento_id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success("Pedido criado!");
 
+        $atendimento = Atendimento::find($request->atendimento_id);
         return route('atendimentos', [
-            'id' => $request->atendimento_id
+            'id' => $atendimento->mesa
         ])->redirect();
     }
 
@@ -305,7 +319,8 @@ class AtendimentosController extends Controller
 
         if (empty($pedidos)) {
             NotifyComponent::error("Sem pedidos!");
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         try {
@@ -324,7 +339,8 @@ class AtendimentosController extends Controller
             $atendimento->delete();
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao finalizar atendimento: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success("Atendimento da mesa {$atendimento->mesa} finalizado e removido!");
@@ -364,12 +380,14 @@ class AtendimentosController extends Controller
             $this->atualizarTotal($atendimento_id);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao excluir pedido: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $atendimento_id])->redirect();
+            $atendimento = Atendimento::find($atendimento_id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success("Pedido excluído!");
 
-        return route('atendimentos', ['id' => $atendimento_id])->redirect();
+        $atendimento = Atendimento::find($atendimento_id);
+        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
     }
 
     // =======================================================================
@@ -385,12 +403,14 @@ class AtendimentosController extends Controller
             $this->atualizarTotal($atendimento_id);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao excluir produto do pedido: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $atendimento_id])->redirect();
+            $atendimento = Atendimento::find($atendimento_id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success("Produto do pedido excluído!");
 
-        return route('atendimentos', ['id' => $atendimento_id])->redirect();
+        $atendimento = Atendimento::find($atendimento_id);
+        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
     }
 
     // ===========================
@@ -406,7 +426,8 @@ class AtendimentosController extends Controller
 
         if (!$request->validation()) {
             NotifyComponent::error("Erros de validação no formulário.");
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         try {
@@ -420,12 +441,14 @@ class AtendimentosController extends Controller
             ]);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao registrar pagamento: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $id])->redirect();
+            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         NotifyComponent::success("Pagamento registrado!");
 
-        return route('atendimentos', ['id' => $id])->redirect();
+        $atendimento = Atendimento::find($id);
+        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
     }
 
     // ===========================

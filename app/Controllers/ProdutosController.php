@@ -40,21 +40,21 @@ class ProdutosController extends Controller
     public function storage()
     {
         $request = Request::getInstance();
-        
+
         $nome = $request->validate(name: 'nome', label: 'Nome')->required();
         $descricao = $request->validate(name: 'descricao', label: 'Descrição')->required();
         $valor_un = $request->validate(name: 'valor_un', label: 'Valor Unitário')->isFloat()->required();
         $unidade_medida = $request->validate(name: 'unidade_medida', label: 'Unidade de Medida')->required();
         $disponivel = ($request->disponivel) ? 1 : 0;
-        
+
         if (!$request->validation()) {
             NotifyComponent::error("Existem erros de preenchimento no formulário.");
             return $request->old()->redirect();
         }
-       
+
         $data = compact('nome', 'descricao', 'valor_un', 'unidade_medida', 'disponivel');
         Produto::create($data);
-        
+
         NotifyComponent::success("Produto $nome cadastrado com sucesso!");
         return route('produto.list')->redirect();
     }
@@ -67,36 +67,41 @@ class ProdutosController extends Controller
     public function update($id)
     {
         $request = Request::getInstance();
-        
+
         // Validação do ID
         $request->validate('id')->required()->isInt()->dbExists(Produto::class);
-        
+
         $nome = $request->validate('nome', 'Nome')->required();
         $descricao = $request->validate('descricao', 'Descrição')->required();
         $valor_un = $request->validate('valor_un', 'Valor Unitário')->isFloat()->required();
         $unidade_medida = $request->validate('unidade_medida', 'Unidade de Medida')->required();
         $disponivel = ($request->disponivel) ? 1 : 0;
-        
+
         if (!$request->validation()) {
             NotifyComponent::error("Existem erros de preenchimento no formulário.");
             return $request->old()->redirect();
         }
-        
+
         // Verifica se o ID da URL corresponde ao ID do formulário
         if ($request->id != $id) {
             NotifyComponent::error("ID do produto inválido.");
             return route('produto.list')->redirect();
         }
-        
-        $data = compact('nome', 'descricao', 'valor_un', 'unidade_medida', 'disponivel');
+
         $produto = Produto::find($id);
-        
+
         if (!$produto) {
             NotifyComponent::error("Produto não encontrado.");
             return route('produto.list')->redirect();
         }
-        
-        $produto->save($data);
+
+        $produto->nome = $nome;
+        $produto->descricao = $descricao;
+        $produto->valor_un = $valor_un;
+        $produto->unidade_medida = $unidade_medida;
+        $produto->disponivel = $disponivel;
+
+        $produto->save();
         NotifyComponent::success("Produto $nome alterado com sucesso!");
         return route('produto.list')->redirect();
     }
@@ -109,12 +114,12 @@ class ProdutosController extends Controller
     public function edit($id)
     {
         $produto = Produto::find($id);
-        
+
         if (!$produto) {
             NotifyComponent::error("Produto não encontrado.");
             route('produto.list')->redirect();
         }
-        
+
         return view('produtos.edit', $produto->toArray(), 'main');
     }
 
@@ -125,23 +130,23 @@ class ProdutosController extends Controller
     public function delete()
     {
         $request = Request::getInstance();
-        
+
         $request->validate('id')->required()->isInt()->dbExists(Produto::class);
-        
+
         if (!$request->validation()) {
             NotifyComponent::error("Existem erros de preenchimento no formulário.");
             return $request->old()->redirect();
         }
 
         $produto = Produto::find($request->id);
-        
+
         if ($produto) {
             $produto->delete();
             NotifyComponent::success("Produto excluído com sucesso!");
         } else {
             NotifyComponent::error("Produto não encontrado.");
         }
-        
+
         return route('produto.list')->redirect();
     }
 }

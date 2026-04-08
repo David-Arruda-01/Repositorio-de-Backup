@@ -10,7 +10,6 @@
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Valor Unitário</th>
-                    <th>Subtotal</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -31,14 +30,13 @@
                         $descricao = $pedido->descricao_produto ?? $produto->descricao ?? '';
                         $valor = $pedido->valor_un ?? $produto->valor_un ?? $produto->preco ?? 0;
                         $qtd = $pedido->quantidade ?? 0;
-                        $subtotal = $valor * $qtd;
                         ?>
 
                         <tr>
                             <td>
                                 <strong><?= $nome ?></strong>
                                 <?php if (!empty($descricao)): ?>
-                                    <br><small><?= $descricao ?></small>
+                                    <br><small style="color: #000;"><?= $descricao ?></small>
                                 <?php endif; ?>
                             </td>
 
@@ -46,10 +44,6 @@
 
                             <td>
                                 R$ <?= number_format($valor, 2, ',', '.') ?>
-                            </td>
-
-                            <td>
-                                R$ <?= number_format($subtotal, 2, ',', '.') ?>
                             </td>
 
                             <td>
