@@ -367,6 +367,27 @@ class AtendimentosController extends Controller
     }
 
     // ===========================
+    // ❌ EXCLUIR PRODUTO DO PEDIDO
+    // ===========================
+
+    public function excluirProduto($id)
+    {
+        try {
+            $pedido = $this->findOrFail(Pedido::class, $id);
+            $atendimento = $this->findOrFail(Atendimento::class, $pedido->atendimento_id);
+            
+            $pedido->delete();
+            $this->atualizarTotal($atendimento->id);
+            
+            NotifyComponent::success("Produto do pedido excluído!");
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+        } catch (\Exception $e) {
+            NotifyComponent::error('Erro ao excluir produto do pedido: ' . $e->getMessage());
+            return Router::getRouteByName('home')->redirect();
+        }
+    }
+
+    // ===========================
     // 💰 REGISTRAR PAGAMENTO (POR MESA)
     // ===========================
 
