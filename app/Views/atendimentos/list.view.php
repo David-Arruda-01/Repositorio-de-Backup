@@ -112,7 +112,7 @@
 
 <!-- Modal de registrar pagamento -->
 <?php if (file_exists(view_path('atendimentos.card-registrar-pagamento'))): ?>
-    <!-- O card de registro de pagamento também pode mostrar a lista se implementado -->
+    <?= view('atendimentos.card-registrar-pagamento', ['atendimento' => $atendimento]); ?>
 <?php endif; ?>
 
 <!-- Modal de finalizar atendimento -->

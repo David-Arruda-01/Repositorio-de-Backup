@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Components\NotifyComponent;
 use App\Models\Atendimento;
 use App\Models\Pagamento;
+use App\Models\PagamentoTipo;
 use App\Models\Produto;
 use App\Models\Pedido;
 use Fmk\MVC\Controller;
@@ -421,23 +422,31 @@ class AtendimentosController extends Controller
     {
         $request = Request::getInstance();
 
-        $valor = $request->validate('valor', 'Valor')->required();
-        $metodo_pagamento = $request->validate('metodo_pagamento', 'Método de Pagamento')->required();
+        $pagamento_tipo_id = $request->validate('pagamento_tipo_id', 'Tipo de Pagamento')->required()->isInt();
+        $valor = $request->validate('valor', 'Valor')->required()->isFloat();
+
+        $atendimento = Atendimento::find($id);
 
         if (!$request->validation()) {
             NotifyComponent::error("Erros de validação no formulário.");
-            $atendimento = Atendimento::find($id);
+            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+        }
+
+        if ((float) $valor <= 0) {
+            NotifyComponent::error('O valor do pagamento deve ser maior que zero.');
             return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
         try {
-            $this->findOrFail(Atendimento::class, $id);
+            $atendimento = $this->findOrFail(Atendimento::class, $id);
+            $this->checkFinalizado($atendimento);
+
+            $pagamentoTipo = $this->findOrFail(PagamentoTipo::class, $pagamento_tipo_id);
 
             Pagamento::create([
                 'atendimento_id'   => $id,
-                'valor'            => $valor,
-                'metodo_pagamento' => $metodo_pagamento,
-                'data_pagamento'   => date('Y-m-d H:i:s')
+                'pagamento_tipo_id' => $pagamentoTipo->id,
+                'valor'            => (float) $valor,
             ]);
         } catch (\Exception $e) {
             NotifyComponent::error('Erro ao registrar pagamento: ' . $e->getMessage());
@@ -445,10 +454,10 @@ class AtendimentosController extends Controller
             return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
         }
 
-        NotifyComponent::success("Pagamento registrado!");
+        NotifyComponent::success("Pagamento registrado com sucesso!");
 
         $atendimento = Atendimento::find($id);
-            return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
+        return route('atendimentos', ['id' => $atendimento->mesa])->redirect();
     }
 
     // ===========================
