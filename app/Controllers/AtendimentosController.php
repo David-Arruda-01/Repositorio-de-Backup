@@ -397,35 +397,57 @@ class AtendimentosController extends Controller
     // 💰 PAGAMENTO
     // ===========================
 
-    public function registrarPagamento($id)
+    public function registrarPagamento($atendimentoId)
     {
         $request = Request::getInstance();
 
-        $valor = $request->validate('valor', 'Valor')->required();
-        $metodo_pagamento = $request->validate('metodo_pagamento', 'Método de Pagamento')->required();
+        // Buscar o atendimento
+        $atendimento = $this->findOrFail(Atendimento::class, $atendimentoId);
 
-        if (!$request->validation()) {
-            NotifyComponent::error("Erros de validação no formulário.");
-            return route('atendimentos', ['id' => $id])->redirect();
+        // Verificar se já foi finalizado
+        $this->checkFinalizado($atendimento);
+
+        // Se for POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            // Validação (seguindo seu padrão)
+            $pagamento_tipo_id = $request->validate('pagamento_tipo_id', 'Tipo de pagamento')->required();
+            $valor             = $request->validate('valor', 'Valor')->required()->isFloat();
+
+            if (!$request->validation()) {
+                NotifyComponent::error("Erro no formulário de pagamento.");
+                return route('atendimentos', ['id' => $atendimentoId])->redirect();
+            }
+
+            try {
+                $pagamento = new Pagamento();
+
+                $pagamento->atendimento_id     = $atendimento->id;
+                $pagamento->pagamento_tipo_id = $pagamento_tipo_id;
+                $pagamento->valor             = $valor;
+                $pagamento->observacao        = $_POST['observacao'] ?? null;
+
+                $pagamento->criacao_data   = date('Y-m-d H:i:s');
+                $pagamento->alteracao_data = date('Y-m-d H:i:s');
+                $pagamento->exclusao_data  = null;
+
+                $pagamento->cadastrar();
+
+                NotifyComponent::success("Pagamento registrado com sucesso!");
+            } catch (\Exception $e) {
+                NotifyComponent::error("Erro ao registrar pagamento: " . $e->getMessage());
+            }
+
+            // 🔥 VOLTA PARA A VIEW DO ATENDIMENTO (igual resto do sistema)
+            return route('atendimentos', [
+                'id' => $atendimento->id
+            ])->redirect();
         }
 
-        try {
-            $this->findOrFail(Atendimento::class, $id);
-
-            Pagamento::create([
-                'atendimento_id'   => $id,
-                'valor'            => $valor,
-                'metodo_pagamento' => $metodo_pagamento,
-                'data_pagamento'   => date('Y-m-d H:i:s')
-            ]);
-        } catch (\Exception $e) {
-            NotifyComponent::error('Erro ao registrar pagamento: ' . $e->getMessage());
-            return route('atendimentos', ['id' => $id])->redirect();
-        }
-
-        NotifyComponent::success("Pagamento registrado!");
-
-        return route('atendimentos', ['id' => $id])->redirect();
+        // Se não for POST, volta também
+        return route('atendimentos', [
+            'id' => $atendimento->id
+        ])->redirect();
     }
 
     // ===========================

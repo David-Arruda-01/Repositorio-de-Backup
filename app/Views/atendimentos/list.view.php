@@ -1,7 +1,6 @@
 <div class="card card-user">
     <?php if (isset($atendimento) && $atendimento): ?>
         <div class="card-header">
-            <?= constant('ID') ?>
             <h5 class="card-title">Atendimento da Mesa <?= $atendimento->mesa ?? '' ?></h5>
         </div>
 
@@ -113,7 +112,7 @@
 
 <!-- Modal de registrar pagamento -->
 <?php if (file_exists(view_path('atendimentos.card-registrar-pagamento'))): ?>
-    <!-- O card de registro de pagamento também pode mostrar a lista se implementado -->
+    <?= view('atendimentos.card-registrar-pagamento', ['atendimento' => $atendimento]); ?>
 <?php endif; ?>
 
 <!-- Modal de finalizar atendimento -->
