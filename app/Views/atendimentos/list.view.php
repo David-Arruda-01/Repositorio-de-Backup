@@ -1,6 +1,7 @@
 <div class="card card-user">
     <?php if (isset($atendimento) && $atendimento): ?>
         <div class="card-header">
+            <?= constant('ID') ?>
             <h5 class="card-title">Atendimento da Mesa <?= $atendimento->mesa ?? '' ?></h5>
         </div>
 
