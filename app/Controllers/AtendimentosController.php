@@ -339,14 +339,19 @@ class AtendimentosController extends Controller
     {
         $atendimento = $this->findOrFail(Atendimento::class, $id);
 
-        // Não deletar o atendimento, apenas confirmar reserva
-        // Deletar pagamentos relacionados se houver
+        // 🔥 marcar como reservada (ajuste conforme sua tabela)
+        $atendimento->reservada = 1; // ou true
+        $atendimento->save();
+
+        // deletar pagamentos
         $pagamentos = Pagamento::where('atendimento_id', '=', $id)->get();
+
         foreach ($pagamentos as $pagamento) {
             $pagamento->delete();
         }
 
         NotifyComponent::success("Mesa {$atendimento->mesa} reservada!");
+
         return Router::getRouteByName('home')->redirect();
     }
 

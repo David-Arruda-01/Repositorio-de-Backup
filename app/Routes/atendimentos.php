@@ -44,6 +44,9 @@ Router::post('atendimento/{id}/finalizar', [App\Controllers\AtendimentosControll
 Router::post('atendimento/{id}/pagamento', [App\Controllers\AtendimentosController::class, 'registrarPagamento'])
     ->name('atendimento.pagamento');
 
+Router::post('atendimento/{id}/reservada', [App\Controllers\AtendimentosController::class, 'reservadaAtendimento'])
+    ->name('atendimento.reservada');
+
 Router::get('atendimento/{id}/total', [App\Controllers\AtendimentosController::class, 'calcularTotalAtendimento'])
     ->name('atendimento.total');
 
