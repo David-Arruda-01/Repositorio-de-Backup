@@ -1,6 +1,6 @@
 <?php
 
-use Fmk\Utils\Router;
+//use Fmk\Utils\Router;
 
 // ROTAS PRINCIPAIS
 require __DIR__ . '/auth.php';
