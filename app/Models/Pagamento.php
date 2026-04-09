@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Fmk\MVC\Model;
+use App\Db\Database;
 
 class Pagamento extends Model
 {
