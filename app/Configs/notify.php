@@ -1,6 +1,6 @@
 <?php
 return [
-    'timer' => 5000,
+    'timer' => 6000,
     'align' => 'right',
-    'from'=> 'top',
+    'from' => 'top',
 ];
