@@ -10,7 +10,7 @@
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Valor Unitário</th>
-                    <th>Subtotal</th>
+                    <!--Subtotal-->
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -48,9 +48,7 @@
                                 R$ <?= number_format($valor, 2, ',', '.') ?>
                             </td>
 
-                            <td>
-                                R$ <?= number_format($subtotal, 2, ',', '.') ?>
-                            </td>
+                            <!-- <th>Subtotal</th> -->
 
                             <td>
                                 <form action="/pedido/<?= $pedido->id ?>/produto/excluir" method="post" style="display:inline; margin:0; padding:0;">
