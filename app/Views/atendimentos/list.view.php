@@ -73,7 +73,7 @@
                                                             </div>
                                                         <?php else: ?>
                                                             <div class="text-center col-12">
-                                                                <form action="/atendimento/<?= $atendimento->id ?>/reservada"
+                                                                <form action="<?= route('atendimento.reservada', ['id' => $atendimento->id]) ?>"
                                                                     method="post"
                                                                     onsubmit="return confirm('Deseja realmente reservar esta mesa?')">
 
