@@ -113,20 +113,6 @@
                                         </button>
                                     </form>
                                 <?php endif; ?>
-
-                                <!-- 🗑️ DELETAR -->
-                                <form action="<?= route('atendimento.delete') ?>"
-                                    method="post"
-                                    onsubmit="return confirm('Deseja realmente deletar este atendimento? Isso removerá permanentemente todos os dados!')"
-                                    class="mb-2">
-
-                                    <?= CSRF() ?>
-                                    <input type="hidden" name="id" value="<?= $atendimento->id ?>">
-
-                                    <button type="submit" class="btn btn-dark w-100">
-                                        <i class="fa fa-trash"></i> Deletar Atendimento
-                                    </button>
-                                </form>
                             </div>
 
                         <?php else: ?>

@@ -28,14 +28,13 @@ class HomeController extends Controller
             ];
         }
 
-        // 🔥 SOMENTE atendimentos abertos
-        $atendimentos = Atendimento::where('pagamento_data', 'IS', null)->get();
+        // 🔥 SOMENTE ATENDIMENTOS ABERTOS (status = 1)
+        $atendimentos = Atendimento::where('status', '=', 1)->get();
 
         foreach ($atendimentos as $atendimento) {
             $mesaId = (int) $atendimento->mesa;
 
             if (isset($mesas[$mesaId])) {
-
                 if (!$mesas[$mesaId]['ocupada']) {
                     $mesas[$mesaId] = [
                         'ocupada' => true,
@@ -52,6 +51,7 @@ class HomeController extends Controller
     public function alterarMesas()
     {
         session_start();
+
         $acao = $_POST['acao'] ?? null;
         if (!$acao) return Router::getRouteByName('home')->redirect();
 
@@ -65,58 +65,56 @@ class HomeController extends Controller
         return Router::getRouteByName('home')->redirect();
     }
 
+    // ===========================
+    // 🍽️ ABRIR ATENDIMENTO
+    // ===========================
+
     public function atendimento($mesaId)
     {
-        // Remove atendimento finalizado antigo (se existir)
-        $atendimentoFinalizado = Atendimento::where('mesa', '=', $mesaId)
-            ->orderDesc('id')
+        // 🔥 Verifica se já existe atendimento ABERTO
+        $atendimento = Atendimento::where('mesa', '=', $mesaId)
+            ->where('status', '=', 1)
             ->first();
 
-        if ($atendimentoFinalizado && $atendimentoFinalizado->pagamento_data !== null) {
-
-            $pedidos = \App\Models\Pedido::where('atendimento_id', '=', $atendimentoFinalizado->id)->get();
-            foreach ($pedidos as $pedido) {
-                $pedido->delete();
-            }
-
-            $pagamentos = \App\Models\Pagamento::where('atendimento_id', '=', $atendimentoFinalizado->id)->get();
-            foreach ($pagamentos as $pagamento) {
-                $pagamento->delete();
-            }
-
-            $atendimentoFinalizado->delete();
+        // Se não existir, cria um novo
+        if (!$atendimento) {
+            $atendimento = Atendimento::create([
+                'mesa' => $mesaId,
+                'status' => 1, // 🔥 ABERTO
+                'total' => 0,
+                'reservada' => null,
+                'criacao_data' => date('Y-m-d H:i:s')
+            ]);
         }
-
-        // 🔥 Cria ou atualiza atendimento como NÃO reservado
-        $atendimento = $this->salvarAtendimento($mesaId, null);
 
         return route('atendimentos', ['id' => $atendimento->id])->redirect();
     }
 
+    // ===========================
+    // 🪑 RESERVAR MESA
+    // ===========================
+
     public function reservar($mesaId)
     {
-        $this->salvarAtendimento($mesaId, 1); // 1 = reservado
-
-        return route('home')->redirect();
-    }
-    private function salvarAtendimento($mesaId, $reservada = null)
-    {
+        // 🔥 Verifica se já existe atendimento aberto
         $atendimento = Atendimento::where('mesa', '=', $mesaId)
-            ->where('pagamento_data', 'IS', null)
-            ->orderDesc('id')
+            ->where('status', '=', 1)
             ->first();
 
         if ($atendimento) {
-            $atendimento->reservada = $reservada;
+            $atendimento->reservada = 1;
             $atendimento->save();
         } else {
-            $atendimento = Atendimento::create([
+            // cria já como reservado
+            Atendimento::create([
                 'mesa' => $mesaId,
-                'criacao_data' => date('Y-m-d H:i:s'),
-                'reservada' => $reservada
+                'status' => 1,
+                'total' => 0,
+                'reservada' => 1,
+                'criacao_data' => date('Y-m-d H:i:s')
             ]);
         }
 
-        return $atendimento;
+        return route('home')->redirect();
     }
 }
