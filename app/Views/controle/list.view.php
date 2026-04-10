@@ -4,7 +4,6 @@
         <div class="col">
             <div class="card">
                 <div class="card-body">
-                    <h3>Em construção</h3>
                     <h2 class="mb-4">💰 Controle de Pagamentos</h2>
 
                     <table class="table table-bordered table-striped">

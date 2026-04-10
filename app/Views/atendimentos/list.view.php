@@ -56,7 +56,6 @@
                                                             </a>
                                                         </div>
                                                         <div class="text-center col-12">
-                                                            <?= constant('NAO') ?>
                                                             <a href="#" class="btn btn-success w-100" data-toggle="modal"
                                                                 data-target="#registrar-pagamento">
                                                                 <i class="fa fa-money mr-2"></i>
@@ -70,20 +69,6 @@
                                                                     <i class="fa fa-handshake-o mr-2"></i>
                                                                     Finalizar Atendimento [F]
                                                                 </a>
-                                                            </div>
-                                                        <?php else: ?>
-                                                            <div class="text-center col-12">
-                                                                <form action="<?= route('atendimento.reservada', ['id' => $atendimento->id]) ?>"
-                                                                    method="post"
-                                                                    onsubmit="return confirm('Deseja realmente reservar esta mesa?')">
-
-                                                                    <?= CSRF() ?>
-
-                                                                    <button type="submit" class="btn btn-secondary w-100">
-                                                                        <i class="fa fa-bookmark mr-2"></i>
-                                                                        Reservada [R]
-                                                                    </button>
-                                                                </form>
                                                             </div>
                                                         <?php endif; ?>
                                                     </div>
