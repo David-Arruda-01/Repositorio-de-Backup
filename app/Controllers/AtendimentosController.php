@@ -245,20 +245,30 @@ class AtendimentosController extends Controller
             }
 
             try {
+                // 💰 REGISTRA PAGAMENTO
                 $pagamento = new Pagamento();
 
                 $pagamento->atendimento_id = $atendimento->id;
                 $pagamento->pagamento_tipo_id = $pagamento_tipo_id;
                 $pagamento->valor = $valor;
-
                 $pagamento->criacao_data = date('Y-m-d H:i:s');
 
                 $pagamento->cadastrar();
-            } catch (\Exception $e) {
-                NotifyComponent::error($e->getMessage());
-            }
 
-            return route('atendimentos', ['id' => $atendimento->id])->redirect();
+                // 🔥 FINALIZA ATENDIMENTO
+                $atendimento->status = 0;
+                $atendimento->pagamento_data = date('Y-m-d H:i:s');
+                $atendimento->save();
+
+                // ✅ ALERTA DE SUCESSO
+                NotifyComponent::success("Pagamento realizado e atendimento finalizado com sucesso!");
+
+                // 🔥 REDIRECIONA PARA HOME
+                return Router::getRouteByName('home')->redirect();
+            } catch (\Exception $e) {
+                NotifyComponent::error("Erro ao registrar pagamento: " . $e->getMessage());
+                return route('atendimentos', ['id' => $atendimento->id])->redirect();
+            }
         }
 
         return route('atendimentos', ['id' => $atendimento->id])->redirect();

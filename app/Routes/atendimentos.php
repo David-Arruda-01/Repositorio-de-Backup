@@ -49,6 +49,7 @@ Router::post('atendimento/{id}/reservada', [App\Controllers\AtendimentosControll
 
 Router::get('atendimento/{id}/total', [App\Controllers\AtendimentosController::class, 'calcularTotalAtendimento'])
     ->name('atendimento.total');
+Router::get('/atendimento/{id}/total', [App\Controllers\AtendimentosController::class, 'getTotal']);
 
 Router::post('atendimento/delete', [App\Controllers\AtendimentosController::class, 'destroy'])
     ->name('atendimento.delete');

@@ -18,6 +18,9 @@ class Pagamento extends Model
         'exclusao_data'
     ];
 
+    // ===========================
+    // 💾 CADASTRAR
+    // ===========================
 
     public function cadastrar()
     {
@@ -26,63 +29,62 @@ class Pagamento extends Model
 
         $id = (new Database('pagamentos'))->insert([
             'atendimento_id'     => $this->atendimento_id,
-            'pagamento_tipo_id' => $this->pagamento_tipo_id,
-            'valor'             => $this->valor,
-            'observacao'        => $this->observacao,
-            'criacao_data'      => $this->criacao_data,
-            'alteracao_data'    => $this->alteracao_data,
-            'exclusao_data'     => $this->exclusao_data
+            'pagamento_tipo_id'  => $this->pagamento_tipo_id,
+            'valor'              => $this->valor,
+            'observacao'         => $this->observacao,
+            'criacao_data'       => $this->criacao_data,
+            'alteracao_data'     => $this->alteracao_data,
+            'exclusao_data'      => $this->exclusao_data
         ]);
 
         $this->id = $id;
 
         return $id;
     }
-    /**
-     * 🔗 Pagamento pertence a um atendimento
-     */
+
+    // ===========================
+    // 🔗 RELACIONAMENTOS
+    // ===========================
+
     public function atendimento()
     {
         return $this->belongsTo(Atendimento::class, 'atendimento_id');
     }
 
-    /**
-     * 🔗 Pagamento pertence a um tipo de pagamento (opcional, se tiver essa tabela)
-     */
-    public function tipoPagamento()
+    public function tipo()
     {
         return $this->belongsTo(PagamentoTipo::class, 'pagamento_tipo_id');
     }
 
-    /**
-     * 📊 Escopo: pagamentos de um atendimento
-     */
+    // ===========================
+    // 📊 SCOPES
+    // ===========================
+
     public function scopeDoAtendimento($query, $atendimentoId)
     {
         return $query->where('atendimento_id', $atendimentoId);
     }
 
-    /**
-     * 📊 Escopo: ordenar por data de criação
-     */
     public function scopeOrdenado($query)
     {
         return $query->orderBy('criacao_data', 'desc');
     }
 
-    /**
-     * 💰 Formatar valor (Accessor)
-     */
+    // ===========================
+    // 💰 ACCESSORS
+    // ===========================
+
     public function getValorFormatadoAttribute()
     {
-        return number_format($this->valor ?? 0, 2, ',', '.');
+        return 'R$ ' . number_format($this->valor ?? 0, 2, ',', '.');
     }
 
-    /**
-     * 💳 Nome do tipo de pagamento (se tiver relacionamento)
-     */
-    public function getMetodoFormatadoAttribute()
+    public function getTipoFormatadoAttribute()
     {
-        return $this->tipoPagamento ? $this->tipoPagamento->nome : 'Não informado';
+        return $this->tipo->descricao ?? 'Não informado';
+    }
+    public function with()
+    {
+        return $this;
     }
 }
