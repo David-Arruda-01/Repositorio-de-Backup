@@ -27,9 +27,10 @@ class ControleController extends Controller
             // Buscar todos os pagamentos
             $pagamentos = Pagamento::all() ?? [];
 
-            // Adicionar atendimento relacionado (evita erro se não existir)
+            // Adicionar atendimento e tipo de pagamento relacionados
             foreach ($pagamentos as $pagamento) {
                 $pagamento->atendimento = Atendimento::find($pagamento->atendimento_id);
+                $pagamento->tipo        = \App\Models\PagamentoTipo::find($pagamento->pagamento_tipo_id);
             }
 
             // 🔥 CORREÇÃO: usar a view correta

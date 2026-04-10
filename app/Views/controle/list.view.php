@@ -27,7 +27,7 @@
                                         <?= $pagamento->atendimento->mesa ?? '—' ?>
                                     </td>
 
-                                    <td><?= $pagamento->pagamento_tipo_id ?></td>
+                                    <td><?= $pagamento->tipo->descricao ?? 'Não informado' ?></td>
 
                                     <td>
                                         R$ <?= number_format($pagamento->valor, 2, ',', '.') ?>
