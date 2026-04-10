@@ -33,6 +33,7 @@
                             name="valor"
                             min="0.01"
                             step="0.01"
+                            value="<?= $atendimento->total ?>"
                             placeholder="0,00"
                             required>
                     </div>
