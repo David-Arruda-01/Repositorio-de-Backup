@@ -12,7 +12,7 @@ class ControleController extends Controller
 {
     public function __construct()
     {
-        $this->middlewares('auth');
+        $this->middlewares('auth', 'admin');
     }
 
     public function index()

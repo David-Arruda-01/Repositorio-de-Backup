@@ -83,7 +83,10 @@ class Funcionario extends Model implements Auth
      */
     public function isAdmin()
     {
-        return $this->login === 'root' || 
+        // Verifica se o perfil é 'admin' ou 'root'
+        // Também mantém as verificações de fallback para IDs e logins específicos
+        return (isset($this->perfil) && in_array($this->perfil, ['admin', 'root'])) ||
+               $this->login === 'root' || 
                $this->id == 1 || 
                $this->nome === 'admin' || 
                $this->login === 'admin@example.com' ||
