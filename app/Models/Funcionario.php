@@ -74,6 +74,15 @@ class Funcionario extends Model implements Auth
     }
 
     /**
+     * Verifica se o usuário é administrador.
+     * Por padrão, o usuário 'root' ou o primeiro usuário (ID 1) são considerados admins.
+     */
+    public function isAdmin()
+    {
+        return $this->login === 'root' || $this->id == 1;
+    }
+
+    /**
      * Atalho para pegar o primeiro registro
      */
     public static function first()
