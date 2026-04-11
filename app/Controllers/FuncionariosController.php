@@ -33,27 +33,38 @@ class FuncionariosController extends Controller
 
     /**
      * Salva o funcionário no banco de dados
-     * @param mixed $id
+     * @var mixed $id
      * @return void
      */
     public function storage()
     {
         $request = Request::getInstance();
+
+        // 🔥 Validação
         $nome = $request->validate('nome', 'Nome')->required();
-        $cpf = str_replace('.', '', str_replace('-', '', $request->validate('cpf', 'CPF')->required()));
+        $cpf = $request->validate('cpf', 'CPF')->required();
         $login = $request->validate('login', 'Endereço de E-mail')->required();
-        $rg = $request->rg;
-        $rg_expedidor = $request->rg_expedidor;
-        $telefone = $request->telefone;
-        $password = $request->validate('password', 'Senha')->required()->confirme($request->confirmacao); 
-            if (!$request->validation()) {
-                NotifyComponent::error("Existem erros de preenchimento no formulário.");
-                return $request->old()->redirect();
-            }
+        $password = $request->validate('password', 'Senha')->required()->confirme($request->confirmacao);
+
+        if (!$request->validation()) {
+            NotifyComponent::error("Existem erros de preenchimento no formulário.");
+            return $request->old()->redirect();
+        }
+
+        // 🔥 Pegando os valores CORRETAMENTE
+        $data = [
+            'nome' => $nome->getValue(),
+            'cpf' => str_replace(['.', '-'], '', $cpf->getValue()),
+            'login' => $login->getValue(),
+            'password' => password_hash($password->getValue(), PASSWORD_DEFAULT),
+            'rg' => $request->rg,
+            'rg_expedidor' => $request->rg_expedidor,
+            'telefone' => $request->telefone
+        ];
+
         $funcionario = new Funcionario();
-        $password = password_hash($password, PASSWORD_DEFAULT);
-        $data = compact('nome', 'cpf', 'login', 'password', 'rg', 'rg_expedidor', 'telefone');
         $funcionario->save($data);
+
         NotifyComponent::success("Funcionário cadastrado com sucesso!");
         return route('funcionario.list')->redirect();
     }
@@ -68,7 +79,7 @@ class FuncionariosController extends Controller
         $rg_expedidor = $request->rg_expedidor;
         $telefone = $request->telefone;
         $data = compact('nome', 'cpf', 'login', 'rg', 'rg_expedidor', 'telefone');
-        if(!empty(trim($request->password))){
+        if (!empty(trim($request->password))) {
             $password = $request->validate('password', 'Senha')->confirme($request->confirmacao);
             $password = password_hash($password, PASSWORD_DEFAULT);
             $data['password'] = $password;
