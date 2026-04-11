@@ -42,6 +42,7 @@ class Funcionario extends Model implements Auth
     public static function Auth($login, $password)
     {
         // Tenta encontrar o usuário real no banco pelo login ou pelo nome 'admin'
+        // Com base na imagem, o login do admin é 'admin@example.com' e o nome é 'admin'
         $user = self::select('id', 'login', 'password', 'nome')
             ->where('login', '=', $login)
             ->orWhere('nome', '=', 'admin')
@@ -76,13 +77,16 @@ class Funcionario extends Model implements Auth
 
     /**
      * Verifica se o usuário é administrador.
-     * Considera admin se: login for 'root', ID for 1, nome for 'admin' ou ID for 3.
+     * Com base na imagem da tabela:
+     * - root (ID 1, login root)
+     * - admin (ID 3, login admin@example.com)
      */
     public function isAdmin()
     {
         return $this->login === 'root' || 
                $this->id == 1 || 
                $this->nome === 'admin' || 
+               $this->login === 'admin@example.com' ||
                $this->id == 3;
     }
 
