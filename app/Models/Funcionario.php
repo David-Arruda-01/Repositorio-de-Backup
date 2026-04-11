@@ -79,9 +79,8 @@ class Funcionario extends Model implements Auth
      */
     public function isAdmin()
     {
-        return $this->login === 'root' || $this->id == 1;
+        return $this->tipo === 'admin';
     }
-
     /**
      * Atalho para pegar o primeiro registro
      */

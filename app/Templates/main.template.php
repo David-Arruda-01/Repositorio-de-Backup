@@ -33,9 +33,9 @@
       <div class="sidebar-wrapper">
         <ul class="nav">
           <?= component('menu', ['route' => 'home', 'label' => 'Mesas', 'icon' => 'fa fa-table']); ?>
+          <?= component('menu', ['route' => 'funcionario.list', 'label' => 'Funcionários', 'icon' => 'fa fa-users']); ?>
+          <?= component('menu', ['route' => 'produto.list', 'label' => 'Produtos', 'icon' => 'fa fa-coffee']); ?>
           <?php if (isAdmin()): ?>
-            <?= component('menu', ['route' => 'funcionario.list', 'label' => 'Funcionários', 'icon' => 'fa fa-users']); ?>
-            <?= component('menu', ['route' => 'produto.list', 'label' => 'Produtos', 'icon' => 'fa fa-coffee']); ?>
             <?= component('menu', ['route' => 'controle', 'label' => 'Controle', 'icon' => 'nc-icon nc-settings-gear-65']); ?>
           <?php endif; ?>
         </ul>
