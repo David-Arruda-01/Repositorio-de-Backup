@@ -12,18 +12,27 @@
               <?= session()->flush('msg'); ?>
             </div>
           <?php endif ?>
-          <form role="form" action="\logar" method="POST">
-            <?= CSRF() ?>
-            <div class="form-group mb-3">
-              <input type="text" class="form-control form-control-lg <?= has_error('login', 'is-invalid') ?>"
-                placeholder="Login" name="login" value="<?=old('login')?>" required>
-              <ul class="invalid-feedback">
-                <?php
-                foreach (errors('login') as $error): ?>
-                  <li><?= $error ?></li>
-                <?php endforeach ?>
-              </ul>
-            </div>
+	          <form role="form" action="\logar" method="POST">
+	            <?= CSRF() ?>
+	            <div class="form-group mb-3">
+	              <input type="email" class="form-control form-control-lg <?= has_error('email', 'is-invalid') ?>"
+	                placeholder="E-mail" name="email" value="<?=old('email')?>" required>
+	              <ul class="invalid-feedback">
+	                <?php foreach (errors('email') as $error): ?>
+	                  <li><?= $error ?></li>
+	                <?php endforeach ?>
+	              </ul>
+	            </div>
+	            <div class="form-group mb-3">
+	              <input type="text" class="form-control form-control-lg <?= has_error('login', 'is-invalid') ?>"
+	                placeholder="Login" name="login" value="<?=old('login')?>" required>
+	              <ul class="invalid-feedback">
+	                <?php
+	                foreach (errors('login') as $error): ?>
+	                  <li><?= $error ?></li>
+	                <?php endforeach ?>
+	              </ul>
+	            </div>
             <div class="mb-3 form-group">
               <input type="password" class="form-control form-control-lg <?= has_error('senha', 'is-invalid') ?>"
                 placeholder="Senha" aria-label="Password" name="senha" required>

@@ -18,18 +18,29 @@ class LoginController extends Controller{
 
     public function logar(){
         $request = Request::getInstance();
-        //loigin e senha...
-       
+        
+        $email = $request->validate('email', 'E-mail')->required();
         $login = $request->validate('login', 'Usuário')->required();
-        $senha = $request->validate('senha','Senha')->required();
+        $senha = $request->validate('senha', 'Senha')->required();
+
         if(!$request->validation()){
             NotifyComponent::error('Existem erros de preenchimento no formulário');
-            Router::getRouteByName('login')->redirect();
+            return Router::getRouteByName('login')->redirect();
         }
-        if(Funcionario::Auth($login, $senha)){
+
+        // Verifica se o e-mail existe no banco de dados
+        $userExists = Funcionario::where('login', '=', $email->getValue())->first();
+        
+        if (!$userExists) {
+            NotifyComponent::error('O e-mail informado não está cadastrado no sistema.');
+            return Router::getRouteByName('login')->redirect();
+        }
+
+        if(Funcionario::Auth($login->getValue(), $senha->getValue())){
             NotifyComponent::success('Bem vindo !!!');
             return Router::getRouteByName('home')->redirect();
         }
+
         NotifyComponent::warning('Credenciais inválidas!');
         return Router::getRouteByName('login')->redirect();
     }
