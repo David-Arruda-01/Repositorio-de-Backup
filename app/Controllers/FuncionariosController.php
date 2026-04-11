@@ -11,7 +11,8 @@ class FuncionariosController extends Controller
 {
     public function __construct()
     {
-        $this->middlewares('auth');
+        // Restrição para que somente admin ou root acessem a gestão de funcionários
+        $this->middlewares('auth', 'admin');
     }
     /**
      * Listar Funcionários do Sistema
@@ -40,7 +41,7 @@ class FuncionariosController extends Controller
     {
         $request = Request::getInstance();
 
-        // 🔥 Validação
+        // Validação
         $nome = $request->validate('nome', 'Nome')->required();
         $cpf = $request->validate('cpf', 'CPF')->required();
         $login = $request->validate('login', 'Endereço de E-mail')->required();
@@ -51,7 +52,7 @@ class FuncionariosController extends Controller
             return $request->old()->redirect();
         }
 
-        // 🔥 Pegando os valores CORRETAMENTE
+        // Pegando os valores CORRETAMENTE
         $data = [
             'nome' => $nome->getValue(),
             'cpf' => str_replace(['.', '-'], '', $cpf->getValue()),

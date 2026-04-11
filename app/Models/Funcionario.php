@@ -14,11 +14,12 @@ class Funcionario extends Model implements Auth
         'cpf',
         'rg',
         'rg_expedidor',
-        'password'
+        'password',
+        'perfil'
     ];
 
     /**
-     * 🔥 Sobrescreve o save para aceitar array
+     * Sobrescreve o save para aceitar array
      */
     public function save(array $data = [])
     {
@@ -35,39 +36,31 @@ class Funcionario extends Model implements Auth
 
     public function login()
     {
-        // Registra o próprio objeto na sessão para manter as alterações em memória (como o login personalizado)
+        // Registra o próprio objeto na sessão para manter as alterações em memória
         session()->userRegister($this);
     }
 
     public static function Auth($login, $password)
     {
-        // Tenta encontrar o usuário real no banco pelo login ou pelo nome 'admin'
-        // Com base na imagem, o login do admin é 'admin@example.com' e o nome é 'admin'
-        $user = self::select('id', 'login', 'password', 'nome')
+        // Tenta encontrar o usuário real no banco pelo login
+        $user = self::select('*')
             ->where('login', '=', $login)
-            ->orWhere('nome', '=', 'admin')
             ->first();
 
-        // Se não encontrar, usa o primeiro usuário do banco como template (geralmente o root)
+        // Se não encontrar o usuário, falha na autenticação
         if (!$user) {
-            $user = self::first();
-            if ($user) {
-                $user->login = $login; // Sobrescreve o login para o que foi digitado
-                $user->nome = $login;  // Sobrescreve o nome para exibição
-            }
+            return false;
         }
 
-        // Se o banco estiver totalmente vazio, cria um objeto temporário
-        if (!$user) {
-            $user = new self();
-            $user->id = 1;
-            $user->login = $login;
-            $user->nome = $login;
+        // Verifica a senha (usando password_verify para senhas em hash)
+        // Nota: Se as senhas no banco não estiverem em hash, este método precisará ser ajustado.
+        // Mas para segurança padrão, usamos password_verify.
+        if (password_verify($password, $user->password) || $password === $user->password) {
+            $user->login();
+            return true;
         }
 
-        // Realiza o login (ignora a verificação de senha conforme solicitado anteriormente)
-        $user->login();
-        return true;
+        return false;
     }
 
     public function logout()
@@ -77,20 +70,14 @@ class Funcionario extends Model implements Auth
 
     /**
      * Verifica se o usuário é administrador.
-     * Com base na imagem da tabela:
-     * - root (ID 1, login root)
-     * - admin (ID 3, login admin@example.com)
+     * Restrito apenas aos usuários com login 'admin' ou 'root'.
      */
     public function isAdmin()
     {
-        // Verifica se o perfil é 'admin' ou 'root'
-        // Também mantém as verificações de fallback para IDs e logins específicos
-        return (isset($this->perfil) && in_array($this->perfil, ['admin', 'root'])) ||
-               $this->login === 'root' || 
-               $this->id == 1 || 
-               $this->nome === 'admin' || 
-               $this->login === 'admin@example.com' ||
-               $this->id == 3;
+        // Restrição rigorosa conforme solicitado: apenas admin ou root
+        $authorizedLogins = ['admin', 'root', 'admin@example.com'];
+        
+        return in_array($this->login, $authorizedLogins);
     }
 
     /**
