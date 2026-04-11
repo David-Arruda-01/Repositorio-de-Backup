@@ -273,4 +273,25 @@ class AtendimentosController extends Controller
 
         return route('atendimentos', ['id' => $atendimento->id])->redirect();
     }
+
+    // ===========================
+    // 🔖 RESERVAR
+    // ===========================
+
+    // public function reservadaAtendimento($id)
+    // {
+    //     try {
+    //         $atendimento = $this->findOrFail(Atendimento::class, $id);
+    //         $this->checkFinalizado($atendimento);
+
+    //         $atendimento->reservada = date('Y-m-d H:i:s');
+    //         $atendimento->save();
+
+    //         NotifyComponent::success("Mesa {$atendimento->mesa} marcada como reservada!");
+    //         return Router::getRouteByName('home')->redirect();
+    //     } catch (\Exception $e) {
+    //         NotifyComponent::error("Erro ao reservar mesa: " . $e->getMessage());
+    //         return route('atendimentos', ['id' => $id])->redirect();
+    //     }
+    // }
 }

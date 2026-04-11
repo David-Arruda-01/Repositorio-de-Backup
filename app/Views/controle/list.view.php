@@ -4,7 +4,6 @@
         <div class="col">
             <div class="card">
                 <div class="card-body">
-                    <h3>Em construção</h3>
                     <h2 class="mb-4">💰 Controle de Pagamentos</h2>
 
                     <table class="table table-bordered table-striped">
@@ -27,7 +26,7 @@
                                         <?= $pagamento->atendimento->mesa ?? '—' ?>
                                     </td>
 
-                                    <td><?= $pagamento->pagamento_tipo_id ?></td>
+                                    <td><?= $pagamento->tipo->descricao ?? 'Não informado' ?></td>
 
                                     <td>
                                         R$ <?= number_format($pagamento->valor, 2, ',', '.') ?>

@@ -6,7 +6,7 @@ use Fmk\MVC\Model;
 
 class PagamentoTipo extends Model
 {
-    protected $table = 'pagamentos_tipos';
+    static protected $table = 'pagamentos_tipos';
 
     protected $visible = [
         'id',
