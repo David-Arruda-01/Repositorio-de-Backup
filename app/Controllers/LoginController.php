@@ -26,7 +26,6 @@ class LoginController extends Controller{
             NotifyComponent::error('Existem erros de preenchimento no formulário');
             Router::getRouteByName('login')->redirect();
         }
-        Funcionario::Auth($login, $senha);
         if(Funcionario::Auth($login, $senha)){
             NotifyComponent::success('Bem vindo !!!');
             return Router::getRouteByName('home')->redirect();
