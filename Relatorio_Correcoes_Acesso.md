@@ -87,3 +87,11 @@ Com essas alterações, o sistema agora garante que:
 1. Apenas usuários cadastrados com a senha correta consigam logar.
 2. Apenas os usuários com login **admin**, **root** ou **admin@example.com** tenham privilégios de administrador.
 3. A tela de **Controle** e a gestão de **Funcionários** estão agora devidamente protegidas contra acesso não autorizado.
+
+
+Comandos para atualizar o projeto:
+
+git status
+git add .
+git commit -m "Atualização login corrigido"
+git push origin main --force-with-lease
