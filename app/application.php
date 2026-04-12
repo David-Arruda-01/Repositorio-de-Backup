@@ -5,9 +5,8 @@ use Fmk\Initialize;
 use Fmk\Utils\Router;
 
 Initialize::run();
-Initialize::createConstants(include "Configs/app.php");
+// Carrega configurações (arquivo + banco de dados) e cria constantes
 Initialize::createConstants(App\Models\Config::getConfig());
-//A algum  proble com o Fmk\Utils\Config, por isso o getConfig não funciona...
 
 
 
