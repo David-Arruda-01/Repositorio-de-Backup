@@ -128,6 +128,18 @@ public function whereNotNull(string $column)
         return $this;
     }
 
+    /**
+     * Inverte a ordem dos resultados, do último para o primeiro.
+     * Por padrão utiliza a coluna 'id', mas aceita outra coluna.
+     *
+     * @param string $column
+     * @return $this
+     */
+    public function latest(string $column = 'id')
+    {
+        return $this->orderDesc($column);
+    }
+
     public function setCallback($callback){
         $this->callback = $callback;
         return $this;

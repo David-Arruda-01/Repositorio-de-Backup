@@ -1,7 +1,34 @@
 <?php $template->title = 'Controle' ?>
 <div class="container-fluid">
     <div class="row">
-        <div class="col">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">📅 Resumo Diário</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Mesas</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($resumoDiario as $data => $resumo): ?>
+                                <tr>
+                                    <td><?= date('d/m/Y', strtotime($data)) ?></td>
+                                    <td><?= count($resumo['mesas']) ?></td>
+                                    <td>R$ <?= number_format($resumo['valor_total'], 2, ',', '.') ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
             <div class="card">
                 <div class="card-body">
                     <h2 class="mb-4">💰 Controle de Pagamentos</h2>
