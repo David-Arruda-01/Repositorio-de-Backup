@@ -61,25 +61,17 @@
             <span class="navbar-toggler-bar navbar-kebab"></span>
           </button>
           <div class="collapse navbar-collapse justify-content-end" id="navigation">
-            <form id="atendimento">
-              <div class="input-group no-border">
-                <input type="number" value="" class="form-control" placeholder="Nº mesa">
-                <div class="input-group-append">
-                  <div class="input-group-text">
-                    <i class="nc-icon nc-zoom-split"></i>
-                  </div>
-                </div>
-              </div>
-            </form>
             <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link btn-rotate" href="<?= route('configuracoes'); ?>">
-                  <i class="nc-icon nc-settings-gear-65"></i>
-                  <p>
-                    <span class="d-lg-none d-md-block">Configurações</span>
-                  </p>
-                </a>
-              </li>
+              <?php if (isAdmin()): ?>
+                <li class="nav-item">
+                  <a class="nav-link btn-rotate" href="<?= route('configuracoes'); ?>">
+                    <i class="nc-icon nc-settings-gear-65"></i>
+                    <p>
+                      <span class="d-lg-none d-md-block">Configurações</span>
+                    </p>
+                  </a>
+                </li>
+              <?php endif; ?>
               <li class="nav-item">
                 <a class="nav-link btn-rotate" href="<?= route('logout'); ?>">
                   <i class="fa fa-arrow-left mr-2">sair</i>

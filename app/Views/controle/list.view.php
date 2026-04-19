@@ -11,7 +11,7 @@
                         <thead>
                             <tr>
                                 <th>Data</th>
-                                <th>Mesas</th>
+                                <th>QTD. mesas</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
