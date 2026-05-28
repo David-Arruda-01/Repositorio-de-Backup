@@ -1,8 +1,8 @@
-<div class="card card-user"> 
+<div class="card card-user">
   <!-- Alterar action para a rota de update e adicionar method PUT -->
-  <form action="/produto/<?= $id ?>" method="POST"> 
+  <form action="/produto" method="POST">
     <input type="hidden" name="_method" value="PUT">
-    
+
     <div class="card-header">
       <h5 class="card-title">Atualizar Produto</h5>
     </div>
@@ -16,8 +16,8 @@
         <div class="col-md-6">
           <div class="form-group">
             <label for="nome">Nome do produto</label>
-            <input type="text" id="nome" name="nome" 
-              class="form-control <?= has_error('nome', 'is-invalid') ?>" 
+            <input type="text" id="nome" name="nome"
+              class="form-control <?= has_error('nome', 'is-invalid') ?>"
               placeholder="Nome do produto"
               value="<?= old('nome', $nome ?? '') ?>" required>
             <div class="invalid-feedback">
@@ -49,11 +49,11 @@
         <div class="col-md-3">
           <div class="form-group">
             <label for="unidade_medida">Unidade</label>
-            <select id="unidade_medida" name="unidade_medida" 
-              class="form-control <?= has_error('unidade_medida','is-invalid') ?>">
-              <option value="unidade" <?= old('unidade_medida', $unidade_medida ?? '') === 'unidade' ? 'selected' : '' ?>>Unidade</option>
-              <option value="quilo" <?= old('unidade_medida', $unidade_medida ?? '') === 'quilo' ? 'selected' : '' ?>>Quilo</option>
-              <option value="grama" <?= old('unidade_medida', $unidade_medida ?? '') === 'grama' ? 'selected' : '' ?>>Grama</option>
+            <select id="unidade_medida" name="unidade_medida"
+              class="form-control <?= has_error('unidade_medida', 'is-invalid') ?>">
+              <option value="Unidade" <?= old('unidade_medida', $unidade_medida ?? '') === 'Unidade' ? 'selected' : '' ?>>Unidade</option>
+              <option value="Quilo" <?= old('unidade_medida', $unidade_medida ?? '') === 'Quilo' ? 'selected' : '' ?>>Quilo</option>
+              <option value="Grama" <?= old('unidade_medida', $unidade_medida ?? '') === 'Grama' ? 'selected' : '' ?>>Grama</option>
             </select>
             <div class="invalid-feedback">
               <?php foreach (errors('unidade_medida') as $erro): ?>
@@ -86,8 +86,8 @@
         <div class="col-md-4">
           <div class="form-group">
             <label for="disponivel">Disponível em estoque</label>
-            <select id="disponivel" name="disponivel" 
-              class="form-control <?= has_error('disponivel','is-invalid') ?>">
+            <select id="disponivel" name="disponivel"
+              class="form-control <?= has_error('disponivel', 'is-invalid') ?>">
               <option value="1" <?= old('disponivel', $disponivel ?? '') == '1' ? 'selected' : '' ?>>Sim</option>
               <option value="0" <?= old('disponivel', $disponivel ?? '') == '0' ? 'selected' : '' ?>>Não</option>
             </select>

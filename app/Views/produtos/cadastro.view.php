@@ -60,9 +60,9 @@
             <label id="unidade_medida">Unidade</label>
               <select id="unidade_medida" name="unidade_medida" class="form-control mt-2 
                 <?=has_error('unidade_medida','is-invalid')?>">
-                <option value="unidade" <?= old('unidade_medida', $unidade_medida ?? '') === 'unidade' ? 'selected' : ''; ?>>Unidade</option>
-                <option value="quilo" <?= old('unidade_medida', $unidade_medida ?? '') === 'quilo' ? 'selected' : ''; ?>>Quilo</option>
-                <option value="gramas" <?= old('unidade_medida', $unidade_medida ?? '') === 'gramas' ? 'selected' : ''; ?>>Gramas</option>
+                <option value="Unidade" <?= old('unidade_medida', $unidade_medida ?? '') === 'Unidade' ? 'selected' : ''; ?>>Unidade</option>
+                <option value="Quilo" <?= old('unidade_medida', $unidade_medida ?? '') === 'Quilo' ? 'selected' : ''; ?>>Quilo</option>
+                <option value="Grama" <?= old('unidade_medida', $unidade_medida ?? '') === 'Grama' ? 'selected' : ''; ?>>Grama</option>
               </select>
               <div class='invalid-feedback'>
                 <ul>

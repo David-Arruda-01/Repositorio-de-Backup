@@ -14,8 +14,8 @@ Router::post('produto', [App\Controllers\ProdutosController::class, 'storage'])
 Router::get('produto/{id}', [App\Controllers\ProdutosController::class, 'edit'])
     ->name('produto.edit');
 
-Router::post('produto/{id}', [App\Controllers\ProdutosController::class, 'update'])
-    ->name('produto.update');
-
 Router::post('produto/delete', [App\Controllers\ProdutosController::class, 'delete'])
     ->name('produto.delete');
+
+Router::post('produto/{id}', [App\Controllers\ProdutosController::class, 'update'])
+    ->name('produto.update');
