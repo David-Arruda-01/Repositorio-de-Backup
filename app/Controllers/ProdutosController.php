@@ -9,6 +9,21 @@ use Fmk\Utils\Request;
 
 class ProdutosController extends Controller
 {
+    private function normalizeUnidadeMedida($value)
+    {
+        $value = mb_strtolower(trim($value));
+
+        if ($value === 'unidade') {
+            return 'Unidade';
+        }
+
+        if ($value === 'quilo') {
+            return 'Quilo';
+        }
+
+        return 'Grama';
+    }
+
     public function __construct()
     {
         $this->middlewares('auth');
@@ -126,20 +141,6 @@ class ProdutosController extends Controller
         return view('produtos.edit', $produto->toArray(), 'main');
     }
 
-    private function normalizeUnidadeMedida($value)
-    {
-        $value = mb_strtolower(trim($value));
-
-        if ($value === 'unidade') {
-            return 'Unidade';
-        }
-
-        if ($value === 'quilo') {
-            return 'Quilo';
-        }
-
-        return 'Grama';
-    }
 
     /**
      * Apaga um produto da base de dados (soft delete)
