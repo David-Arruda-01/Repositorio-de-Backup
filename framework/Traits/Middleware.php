@@ -24,7 +24,7 @@ Trait Middleware{
 
     
 
-    public function execMiddlewares(callable $handle = null){
+    public function execMiddlewares(?callable $handle = null){
         foreach($this->swapMiddlewares() as $mid){
             $middleware = new $mid;
             if(!$middleware instanceof \Fmk\Interfaces\Middleware){

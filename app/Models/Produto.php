@@ -6,7 +6,14 @@ use Fmk\MVC\Model;
 
 class Produto extends Model
 {
-
+    protected $fillable = [
+        'nome',
+        'descricao',
+        'valor_un',
+        'unidade_medida',
+        'disponivel',
+        'exclusao_data'
+    ];
 
     public function pedidos()
     {

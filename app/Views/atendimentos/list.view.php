@@ -62,15 +62,6 @@
                                                                 <span>Registrar Pagamento [p]</span>
                                                             </a>
                                                         </div>
-                                                        <?php if (count($pedidos) > 0): ?>
-                                                            <div class="text-center col-12">
-                                                                <a href="#" class="btn btn-primary w-100" data-toggle="modal"
-                                                                    data-target="#finalizar-atendimento">
-                                                                    <i class="fa fa-handshake-o mr-2"></i>
-                                                                    Finalizar Atendimento [F]
-                                                                </a>
-                                                            </div>
-                                                        <?php endif; ?>
                                                     </div>
                                                 </div>
                                                 <!-- Card de pagamentos -->

@@ -15,12 +15,13 @@ class ProdutosController extends Controller
     }
 
     /**
-     * Listar Produtos do Sistema
+     * Listar Produtos do Sistema (apenas não excluídos)
      * @return string
      */
     public function index()
     {
-        $produtos = Produto::all();
+        // Busca apenas produtos que não foram excluídos (soft delete)
+        $produtos = Produto::where('exclusao_data', '=', null)->get();
         return view('produtos.list', compact('produtos'), 'main');
     }
 
@@ -96,7 +97,12 @@ class ProdutosController extends Controller
             return route('produto.list')->redirect();
         }
         
-        $produto->save($data);
+        $produto->nome = $nome;
+        $produto->descricao = $descricao;
+        $produto->valor_un = $valor_un;
+        $produto->unidade_medida = $unidade_medida;
+        $produto->disponivel = $disponivel;
+        $produto->save();
         NotifyComponent::success("Produto $nome alterado com sucesso!");
         return route('produto.list')->redirect();
     }
@@ -112,34 +118,52 @@ class ProdutosController extends Controller
         
         if (!$produto) {
             NotifyComponent::error("Produto não encontrado.");
-            route('produto.list')->redirect();
+            return route('produto.list')->redirect();
         }
         
         return view('produtos.edit', $produto->toArray(), 'main');
     }
 
     /**
-     * Apaga um produto da base de dados
+     * Apaga um produto da base de dados (soft delete)
      * @return void
      */
     public function delete()
     {
-        $request = Request::getInstance();
-        
-        $request->validate('id')->required()->isInt()->dbExists(Produto::class);
-        
-        if (!$request->validation()) {
-            NotifyComponent::error("Existem erros de preenchimento no formulário.");
-            return $request->old()->redirect();
-        }
-
-        $produto = Produto::find($request->id);
-        
-        if ($produto) {
-            $produto->delete();
-            NotifyComponent::success("Produto excluído com sucesso!");
-        } else {
-            NotifyComponent::error("Produto não encontrado.");
+        try {
+            $request = Request::getInstance();
+            
+            // Validação simples do ID
+            $id = $request->id ?? null;
+            
+            if (!$id || !is_numeric($id)) {
+                NotifyComponent::error("ID do produto inválido.");
+                return route('produto.list')->redirect();
+            }
+            
+            // Busca o produto
+            $produto = Produto::find($id);
+            
+            if (!$produto) {
+                NotifyComponent::error("Produto não encontrado.");
+                return route('produto.list')->redirect();
+            }
+            
+            // Verifica se já foi excluído
+            if ($produto->exclusao_data !== null) {
+                NotifyComponent::error("Este produto já foi excluído.");
+                return route('produto.list')->redirect();
+            }
+            
+            $nomeProduto = $produto->nome;
+            
+            // Soft delete - marca como excluído sem remover do banco
+            $produto->exclusao_data = date('Y-m-d H:i:s');
+            $produto->save();
+            
+            NotifyComponent::success("Produto '$nomeProduto' excluído com sucesso!");
+        } catch (\Exception $e) {
+            NotifyComponent::error("Erro ao excluir produto: " . $e->getMessage());
         }
         
         return route('produto.list')->redirect();

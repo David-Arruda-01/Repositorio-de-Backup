@@ -204,6 +204,33 @@ class AtendimentosController extends Controller
     }
 
     // ===========================
+    // ➖ EXCLUIR PRODUTO
+    // ===========================
+    public function excluirProduto($id)
+    {
+        try {
+            $pedido = Pedido::find($id);
+
+            if (!$pedido) {
+                NotifyComponent::error('Pedido não encontrado.');
+                return Router::getRouteByName('home')->redirect();
+            }
+
+            $atendimento = $this->findOrFail(Atendimento::class, $pedido->atendimento_id);
+            $this->checkFinalizado($atendimento);
+
+            $pedido->delete();
+            $this->atualizarTotal($atendimento->id);
+
+            NotifyComponent::success('Produto removido do pedido com sucesso.');
+            return route('atendimentos', ['id' => $atendimento->id])->redirect();
+        } catch (\Exception $e) {
+            NotifyComponent::error('Erro ao excluir produto: ' . $e->getMessage());
+            return Router::getRouteByName('home')->redirect();
+        }
+    }
+
+    // ===========================
     // ✅ FINALIZAR
     // ===========================
 
@@ -273,25 +300,4 @@ class AtendimentosController extends Controller
 
         return route('atendimentos', ['id' => $atendimento->id])->redirect();
     }
-
-    // ===========================
-    // 🔖 RESERVAR
-    // ===========================
-
-    // public function reservadaAtendimento($id)
-    // {
-    //     try {
-    //         $atendimento = $this->findOrFail(Atendimento::class, $id);
-    //         $this->checkFinalizado($atendimento);
-
-    //         $atendimento->reservada = date('Y-m-d H:i:s');
-    //         $atendimento->save();
-
-    //         NotifyComponent::success("Mesa {$atendimento->mesa} marcada como reservada!");
-    //         return Router::getRouteByName('home')->redirect();
-    //     } catch (\Exception $e) {
-    //         NotifyComponent::error("Erro ao reservar mesa: " . $e->getMessage());
-    //         return route('atendimentos', ['id' => $id])->redirect();
-    //     }
-    // }
 }
